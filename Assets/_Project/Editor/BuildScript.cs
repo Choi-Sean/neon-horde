@@ -32,8 +32,14 @@ namespace NeonHorde.EditorTools
         {
             ApplyVersion();
             EditorUserBuildSettings.buildAppBundle = true;
-            PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+            var android = UnityEditor.Build.NamedBuildTarget.Android;
+            PlayerSettings.SetScriptingBackend(android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            // NOTE: OptimizeSize + Debug keeps the IL2CPP native compile within RAM on this
+            // dev box. Rebuild with Release/Master before a public launch on a bigger machine.
+            PlayerSettings.SetIl2CppCompilerConfiguration(android, Il2CppCompilerConfiguration.Debug);
+            PlayerSettings.SetIl2CppCodeGeneration(android, UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
+            ApplyAndroidSigning();
 
             var outDir = Path.GetFullPath("build/android");
             Directory.CreateDirectory(outDir);
@@ -89,6 +95,34 @@ namespace NeonHorde.EditorTools
                 locationPathName = outDir,
                 options = BuildOptions.None
             });
+        }
+
+        /// <summary>
+        /// Wire the upload keystore for release Android builds. Passwords come from env
+        /// (ANDROID_KEYSTORE_PASS / ANDROID_KEY_PASS); path + alias are fixed. If the
+        /// keystore file or passwords are missing, falls back to the debug key (fine for
+        /// local device APKs, rejected by Play).
+        /// </summary>
+        static void ApplyAndroidSigning()
+        {
+            string keystore = Path.GetFullPath("keystore/neonhorde-upload.keystore");
+            string storePass = Environment.GetEnvironmentVariable("ANDROID_KEYSTORE_PASS");
+            string keyPass = Environment.GetEnvironmentVariable("ANDROID_KEY_PASS") ?? storePass;
+
+            if (File.Exists(keystore) && !string.IsNullOrEmpty(storePass))
+            {
+                PlayerSettings.Android.useCustomKeystore = true;
+                PlayerSettings.Android.keystoreName = keystore;
+                PlayerSettings.Android.keystorePass = storePass;
+                PlayerSettings.Android.keyaliasName = "neonhorde";
+                PlayerSettings.Android.keyaliasPass = keyPass;
+                Debug.Log("[Build] Android: signing with upload keystore.");
+            }
+            else
+            {
+                PlayerSettings.Android.useCustomKeystore = false;
+                Debug.LogWarning("[Build] Android: no upload keystore/password — using DEBUG key (not Play-uploadable).");
+            }
         }
 
         static void ApplyVersion()

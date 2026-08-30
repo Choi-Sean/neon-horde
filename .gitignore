@@ -40,3 +40,6 @@ crashlytics-build.properties
 # Unity Android build intermediates
 /.utmp/
 /build/
+
+# Signing — NEVER commit the keystore or its passwords
+/keystore/
