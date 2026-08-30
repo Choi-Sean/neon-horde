@@ -74,7 +74,8 @@ namespace NeonHorde.EditorTools
                 target = BuildTarget.Android,
                 targetGroup = BuildTargetGroup.Android,
                 locationPathName = Path.Combine(outDir, "NeonHorde.apk"),
-                options = BuildOptions.None
+                // Development => debug Gradle variant: skips lintVitalAnalyzeRelease + minify.
+                options = BuildOptions.Development | BuildOptions.AllowDebugging
             });
         }
 
