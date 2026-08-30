@@ -27,11 +27,15 @@ definitions:
       UNITY_CHANGESET="2fb0dae735e1"
       UNITY_APP="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app"
       HUB="/Applications/Unity Hub.app/Contents/MacOS/Unity Hub"
-      if [ ! -d "$UNITY_APP" ]; then
-        echo "Installing Unity ${UNITY_VERSION}..."
-        "$HUB" -- --headless install \
+      : "${UNITY_MODULES:=--module ios}"
+      if [ ! -x "${UNITY_APP}/Contents/MacOS/Unity" ]; then
+        echo "Installing Unity ${UNITY_VERSION} (modules: ${UNITY_MODULES}) ..."
+        "$HUB" -- --headless install --architecture arm64 \
           --version "$UNITY_VERSION" --changeset "$UNITY_CHANGESET" \
-          --module ios android --childModules || true
+          $UNITY_MODULES || true
+      else
+        echo "Unity ${UNITY_VERSION} already present (cache hit). Adding modules ${UNITY_MODULES} ..."
+        "$HUB" -- --headless install-modules --version "$UNITY_VERSION" $UNITY_MODULES || true
       fi
       test -x "${UNITY_APP}/Contents/MacOS/Unity" || { echo "Unity install failed"; exit 1; }
       echo "UNITY_HOME=${UNITY_APP}" >> "$CM_ENV"
@@ -84,6 +88,7 @@ workflows:
         - google_play
       vars:
         PACKAGE_NAME: "com.bitbyte.neonhorde"
+        UNITY_MODULES: "--module android --childModules"
       android_signing:
         - neonhorde_keystore
     cache:
@@ -130,6 +135,7 @@ workflows:
         BUNDLE_ID: "com.bitbyte.neonhorde"
         XCODE_PROJECT: "build/ios/Unity-iPhone.xcodeproj"
         XCODE_SCHEME: "Unity-iPhone"
+        UNITY_MODULES: "--module ios"
     cache:
       cache_paths:
         - $HOME/Library/Unity/cache
