@@ -1,0 +1,369 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace NeonHorde
+{
+    /// <summary>
+    /// Data-oriented enemy pool. Struct entries in a packed array, one manager loop
+    /// (no per-enemy MonoBehaviour), per-kind GPU-instanced draw, swap-remove on death.
+    /// M2: catalog-driven types + behaviours, flow-field movement, arena collision,
+    /// elite/boss, hostile projectiles.
+    /// </summary>
+    public sealed class EnemyManager : MonoBehaviour
+    {
+        public const int Capacity = 8000;
+
+        [System.Flags] enum EFlag : byte { None = 0, Elite = 1, Boss = 2 }
+
+        struct E
+        {
+            public Vector2 pos;
+            public Vector2 vel;
+            public float hp;
+            public float maxHp;
+            public byte id;
+            public byte behavior;
+            public byte flags;
+            public float timer;      // ranged fire / exploder fuse / boss phase
+            public float radius;
+            public float hitFlash;
+        }
+
+        readonly E[] _e = new E[Capacity];
+        int _count;
+
+        readonly SpatialHash _hash = new SpatialHash(1.0f);
+        readonly List<int> _neighbors = new List<int>(64);
+
+        Mesh _quad;
+        Material[] _matByKind;
+        Material _matElite, _matBoss;
+        Matrix4x4[][] _mByKind;
+        int[] _mCountByKind;
+        Matrix4x4[] _mElite = new Matrix4x4[256];
+        Matrix4x4[] _mBoss = new Matrix4x4[4];
+        int _mEliteN, _mBossN;
+
+        PlayerController _player;
+        RunManager _run;
+        PickupManager _pickups;
+        Arena _arena;
+        FlowFieldSystem _flow;
+        HostileProjectileManager _hostile;
+        DamageNumberSystem _dmgNumbers;
+
+        public int Count => _count;
+        public bool BossActive { get; private set; }
+        public float BossHp01 { get; private set; }
+
+        void Awake()
+        {
+            _quad = NeonMesh.Quad;
+            int kinds = EnemyCatalog.Count;
+            _matByKind = new Material[kinds];
+            _mByKind = new Matrix4x4[kinds][];
+            _mCountByKind = new int[kinds];
+            for (int i = 0; i < kinds; i++)
+            {
+                _matByKind[i] = NeonMesh.NewUnlit(EnemyCatalog.Get((EnemyId)i).color);
+                _mByKind[i] = new Matrix4x4[Capacity];
+            }
+            _matElite = NeonMesh.NewUnlit(new Color(2.4f, 2.0f, 0.6f, 1f));
+            _matBoss = NeonMesh.NewUnlit(new Color(2.6f, 0.3f, 1.6f, 1f));
+        }
+
+        void Start()
+        {
+            _run = RunManager.Instance;
+            _player = FindFirstObjectByType<PlayerController>();
+            _pickups = FindFirstObjectByType<PickupManager>();
+            _arena = FindFirstObjectByType<Arena>();
+            _flow = FindFirstObjectByType<FlowFieldSystem>();
+            _hostile = FindFirstObjectByType<HostileProjectileManager>();
+            _dmgNumbers = FindFirstObjectByType<DamageNumberSystem>();
+        }
+
+        public void ClearAll() { _count = 0; BossActive = false; }
+
+        public void Spawn(EnemyId id, Vector2 pos, bool elite = false, bool boss = false)
+        {
+            if (_count >= Capacity) return;
+            EnemyDef def = EnemyCatalog.Get(id);
+            float t = _run != null ? _run.State.time : 0f;
+            float hpMul = _run != null && _run.State.map != null ? _run.State.map.enemyHpMul : 1f;
+            float hp = (def.hpBase + def.hpPer10s * (t / 10f)) * hpMul;
+            float radius = def.radius;
+            if (elite) { hp *= 8f; radius *= 1.8f; }
+            if (boss) { hp *= 60f; radius *= 3.2f; }
+
+            ref E e = ref _e[_count++];
+            e.pos = pos;
+            e.vel = Vector2.zero;
+            e.hp = e.maxHp = hp;
+            e.id = (byte)id;
+            e.behavior = (byte)def.behavior;
+            e.flags = (byte)((elite ? EFlag.Elite : 0) | (boss ? EFlag.Boss : 0));
+            e.timer = 0f;
+            e.radius = radius;
+            e.hitFlash = 0f;
+            if (boss)
+            {
+                BossActive = true;
+                if (_run != null) _run.RaiseBossSpawn();
+            }
+        }
+
+        void RemoveAt(int i)
+        {
+            bool wasBoss = (_e[i].flags & (byte)EFlag.Boss) != 0;
+            _count--;
+            if (i != _count) _e[i] = _e[_count];
+            if (wasBoss) BossActive = false;
+        }
+
+        public void BuildHash()
+        {
+            _hash.Clear();
+            for (int i = 0; i < _count; i++) _hash.Insert(i, _e[i].pos);
+        }
+        public void RebuildHash() => BuildHash();
+
+        public void SimTick(float dt)
+        {
+            if (_player == null) return;
+            Vector2 target = _player.transform.position;
+            SeededRng rng = _run != null ? _run.Rng : null;
+            float speedMul = _run != null && _run.State.map != null ? _run.State.map.enemySpeedMul : 1f;
+            NavGrid grid = _arena != null ? _arena.Grid : null;
+
+            BuildHash();
+            BossActive = false;
+
+            for (int i = 0; i < _count; i++)
+            {
+                ref E e = ref _e[i];
+                EnemyDef def = EnemyCatalog.Get((EnemyId)e.id);
+                bool boss = (e.flags & (byte)EFlag.Boss) != 0;
+                if (boss) { BossActive = true; BossHp01 = Mathf.Clamp01(e.hp / e.maxHp); }
+
+                Vector2 toTarget = target - e.pos;
+                float dist = toTarget.magnitude;
+
+                // desired direction: flow field, fallback to direct
+                Vector2 desired;
+                if (_flow != null && _flow.Ready)
+                {
+                    Vector2 ff = _flow.SampleDir(e.pos);
+                    desired = ff.sqrMagnitude > 0.01f ? ff : (dist > 0.001f ? toTarget / dist : Vector2.zero);
+                }
+                else desired = dist > 0.001f ? toTarget / dist : Vector2.zero;
+
+                float spd = def.speedBase * speedMul;
+                float behaviorScale = 1f;
+
+                switch ((EnemyBehavior)e.behavior)
+                {
+                    case EnemyBehavior.Phantom:
+                        behaviorScale = 1.15f;
+                        break;
+                    case EnemyBehavior.Charger:
+                        e.timer -= dt;
+                        if (e.timer <= 0f) { e.timer = 2.5f; }
+                        behaviorScale = e.timer < 0.8f ? 3.0f : 0.9f; // wind-up then dash
+                        break;
+                    case EnemyBehavior.Ranged:
+                        e.timer -= dt;
+                        if (dist < 9f && e.timer <= 0f && _hostile != null)
+                        {
+                            _hostile.Fire(e.pos, (target - e.pos).normalized, 7f, 8, 3f);
+                            e.timer = 2.2f;
+                        }
+                        if (dist < 6f) behaviorScale = -0.6f; // kite
+                        break;
+                    case EnemyBehavior.Exploder:
+                        if (dist < e.radius + 0.7f)
+                        {
+                            if (_player != null) _player.TakeContactDamage(def.contactDamage);
+                            DamageAllInRadius(e.pos, 1.8f, e.maxHp); // also hurt other enemies
+                            RemoveAt(i); i--; continue;
+                        }
+                        behaviorScale = 1.1f;
+                        break;
+                }
+
+                Vector2 sep = Vector2.zero;
+                _hash.Query(e.pos, 0.8f, _neighbors);
+                for (int n = 0; n < _neighbors.Count; n++)
+                {
+                    int j = _neighbors[n];
+                    if (j == i || j >= _count) continue;
+                    Vector2 d = e.pos - _e[j].pos;
+                    float m = d.sqrMagnitude;
+                    if (m > 0.0001f && m < 0.64f) sep += d / m;
+                }
+
+                Vector2 steer = desired * (spd * behaviorScale) + sep * 2.4f;
+                e.vel = Vector2.Lerp(e.vel, steer, 0.25f);
+
+                Vector2 next = e.pos + e.vel * dt;
+                if (grid != null && grid.IsBlockedWorld(next))
+                {
+                    Vector2 nx = new Vector2(next.x, e.pos.y);
+                    Vector2 ny = new Vector2(e.pos.x, next.y);
+                    if (!grid.IsBlockedWorld(nx)) next = nx;
+                    else if (!grid.IsBlockedWorld(ny)) next = ny;
+                    else next = e.pos;
+                }
+                e.pos = next;
+
+                if (e.hitFlash > 0f) e.hitFlash -= dt;
+
+                float touch = e.radius + 0.35f;
+                if (dist < touch && (EnemyBehavior)e.behavior != EnemyBehavior.Exploder)
+                    _player.TakeContactDamage(def.contactDamage);
+            }
+        }
+
+        // ---- damage API used by weapons / projectiles ----
+
+        public int NearestEnemy(Vector2 pos, float maxRange)
+        {
+            _hash.Query(pos, maxRange, _neighbors);
+            float best = maxRange * maxRange;
+            int bi = -1;
+            for (int n = 0; n < _neighbors.Count; n++)
+            {
+                int j = _neighbors[n];
+                if (j >= _count) continue;
+                float d = (_e[j].pos - pos).sqrMagnitude;
+                if (d < best) { best = d; bi = j; }
+            }
+            return bi;
+        }
+
+        public Vector2 EnemyPos(int i) => (uint)i < (uint)_count ? _e[i].pos : Vector2.zero;
+
+        public bool DamageFirstInRadius(Vector2 pos, float radius, float dmg)
+        {
+            _hash.Query(pos, radius + 0.7f, _neighbors);
+            for (int n = 0; n < _neighbors.Count; n++)
+            {
+                int j = _neighbors[n];
+                if (j >= _count) continue;
+                float rr = radius + _e[j].radius;
+                if ((_e[j].pos - pos).sqrMagnitude <= rr * rr)
+                {
+                    DamageIndex(j, dmg);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public int DamageAllInRadius(Vector2 pos, float radius, float dmg)
+        {
+            _hash.Query(pos, radius + 0.7f, _neighbors);
+            int hits = 0;
+            for (int n = 0; n < _neighbors.Count; n++)
+            {
+                int j = _neighbors[n];
+                if (j >= _count) continue;
+                float rr = radius + _e[j].radius;
+                if ((_e[j].pos - pos).sqrMagnitude <= rr * rr)
+                {
+                    if (DamageIndex(j, dmg)) { n--; }
+                    hits++;
+                }
+            }
+            return hits;
+        }
+
+        public int DamageArc(Vector2 origin, Vector2 dir, float range, float halfAngleDeg, float dmg)
+        {
+            dir = dir.sqrMagnitude > 0.001f ? dir.normalized : Vector2.right;
+            float cosHalf = Mathf.Cos(halfAngleDeg * Mathf.Deg2Rad);
+            _hash.Query(origin, range + 0.7f, _neighbors);
+            int hits = 0;
+            for (int n = 0; n < _neighbors.Count; n++)
+            {
+                int j = _neighbors[n];
+                if (j >= _count) continue;
+                Vector2 to = _e[j].pos - origin;
+                if (to.sqrMagnitude > (range + _e[j].radius) * (range + _e[j].radius)) continue;
+                if (Vector2.Dot(to.normalized, dir) < cosHalf) continue;
+                if (DamageIndex(j, dmg)) n--;
+                hits++;
+            }
+            return hits;
+        }
+
+        /// <returns>true if the enemy died (was removed)</returns>
+        bool DamageIndex(int i, float dmg)
+        {
+            ref E e = ref _e[i];
+            e.hp -= dmg;
+            e.hitFlash = 0.08f;
+            if (_dmgNumbers != null) _dmgNumbers.Report(e.pos, dmg);
+            if (e.hp > 0f) return false;
+
+            EnemyDef def = EnemyCatalog.Get((EnemyId)e.id);
+            bool elite = (e.flags & (byte)EFlag.Elite) != 0;
+            bool boss = (e.flags & (byte)EFlag.Boss) != 0;
+            Vector2 at = e.pos;
+            SeededRng rng = _run != null ? _run.Rng : null;
+
+            if (_pickups != null)
+            {
+                _pickups.SpawnGem(at, def.xpValue * (elite ? 6f : 1f) * (boss ? 40f : 1f));
+                float goldChance = def.goldChance + (elite ? 0.6f : 0f) + (boss ? 5f : 0f);
+                if (rng != null && rng.Chance(Mathf.Min(goldChance, 1f)))
+                    _pickups.SpawnGold(at, elite || boss ? 5 : 1);
+                if (elite || boss) _pickups.SpawnChest(at);
+            }
+
+            if (def.behavior == EnemyBehavior.Splitter)
+                for (int s = 0; s < 3; s++)
+                {
+                    Vector2 off = rng != null
+                        ? new Vector2(rng.Range(-0.6f, 0.6f), rng.Range(-0.6f, 0.6f))
+                        : Vector2.zero;
+                    Spawn(EnemyId.Splitterling, at + off);
+                }
+
+            if (def.behavior == EnemyBehavior.FrostTank && _player != null)
+                _player.ApplySlow(0.5f, 1.2f);
+
+            if (_run != null)
+            {
+                _run.State.kills++;
+                if (boss) _run.OnBossDefeated();
+            }
+
+            ScreenShake.Add(boss ? 0.6f : elite ? 0.22f : 0.045f);
+
+            RemoveAt(i);
+            return true;
+        }
+
+        void LateUpdate()
+        {
+            for (int k = 0; k < _mCountByKind.Length; k++) _mCountByKind[k] = 0;
+            _mEliteN = 0; _mBossN = 0;
+
+            for (int i = 0; i < _count; i++)
+            {
+                ref E e = ref _e[i];
+                float s = e.radius * 2f;
+                var m = Matrix4x4.TRS(new Vector3(e.pos.x, e.pos.y, 0f), Quaternion.identity, new Vector3(s, s, 1f));
+                if ((e.flags & (byte)EFlag.Boss) != 0) { if (_mBossN < _mBoss.Length) _mBoss[_mBossN++] = m; }
+                else if ((e.flags & (byte)EFlag.Elite) != 0) { if (_mEliteN < _mElite.Length) _mElite[_mEliteN++] = m; }
+                else _mByKind[e.id][_mCountByKind[e.id]++] = m;
+            }
+
+            for (int k = 0; k < _mByKind.Length; k++)
+                NeonMesh.RenderInstanced(_matByKind[k], _quad, _mByKind[k], _mCountByKind[k]);
+            NeonMesh.RenderInstanced(_matElite, _quad, _mElite, _mEliteN);
+            NeonMesh.RenderInstanced(_matBoss, _quad, _mBoss, _mBossN);
+        }
+    }
+}

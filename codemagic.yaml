@@ -1,0 +1,123 @@
+# NEON HORDE — Codemagic CI (Mac 없이 iOS/Android 클라우드 빌드)
+#
+# 처음 한 번 준비할 것 (Codemagic 웹 UI):
+#   1) 이 리포를 Codemagic 앱에 연결
+#   2) Environment variable groups 생성:
+#        - "unity"            : UNITY_SERIAL, UNITY_EMAIL, UNITY_PASSWORD   (Unity Plus/Pro 권장. Personal은 아래 주석 참고)
+#        - "android_keystore" : CM_KEYSTORE(base64), CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_ALIAS_PASSWORD
+#        - "google_play"      : GCLOUD_SERVICE_ACCOUNT_CREDENTIALS  (Play Console 서비스 계정 JSON)
+#   3) Integrations → App Store Connect API key 등록 → 이름을 "NeonHorde ASC" 로
+#   4) Code signing → iOS: distribution certificate/profile은 ASC API 키로 Codemagic이 자동 생성
+#
+# Unity Personal 라이선스로 CI 하려면: serial 활성화가 안 되므로 .ulf 수동 활성화가 필요.
+#   https://docs.codemagic.io/knowledge-others/manual-unity-license-activation/  (UNITY_LICENSE 변수에 .ulf 내용)
+#   그게 번거로우면 Unity Plus 개인 라이선스가 CI에 가장 매끄럽다.
+
+definitions:
+  unity_bin: &unity_bin
+    UNITY_BIN: "${UNITY_HOME}/Contents/MacOS/Unity"
+
+workflows:
+
+  # ------------------------------------------------------------------ Android
+  android:
+    name: NEON HORDE · Android (AAB)
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    environment:
+      groups:
+        - unity
+        - android_keystore
+        - google_play
+      vars:
+        <<: *unity_bin
+        PACKAGE_NAME: "com.bitbyte.neonhorde"
+      android_signing:
+        - neonhorde_keystore   # Codemagic UI에서 keystore 업로드 후 이 reference 이름 사용
+    scripts:
+      - name: Activate Unity license
+        script: |
+          "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
+            -serial "${UNITY_SERIAL}" -username "${UNITY_EMAIL}" -password "${UNITY_PASSWORD}" || true
+      - name: Build Android App Bundle
+        script: |
+          export APP_VERSION_NAME="1.0.$PROJECT_BUILD_NUMBER"
+          export BUILD_NUMBER="$PROJECT_BUILD_NUMBER"
+          "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
+            -projectPath . \
+            -executeMethod NeonHorde.EditorTools.BuildScript.BuildAndroid
+      - name: Return Unity license
+        script: |
+          "$UNITY_BIN" -batchmode -nographics -quit -returnlicense -logFile - || true
+    artifacts:
+      - build/android/*.aab
+      - build/android/*.apk
+      - "**/Editor.log"
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+      email:
+        recipients:
+          - choi.sean1991@gmail.com
+
+  # ------------------------------------------------------------------ iOS
+  ios:
+    name: NEON HORDE · iOS (TestFlight)
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: NeonHorde ASC
+    environment:
+      groups:
+        - unity
+      vars:
+        <<: *unity_bin
+        BUNDLE_ID: "com.bitbyte.neonhorde"
+        XCODE_PROJECT: "build/ios/Unity-iPhone.xcodeproj"
+        XCODE_SCHEME: "Unity-iPhone"
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.bitbyte.neonhorde
+    scripts:
+      - name: Activate Unity license
+        script: |
+          "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
+            -serial "${UNITY_SERIAL}" -username "${UNITY_EMAIL}" -password "${UNITY_PASSWORD}" || true
+      - name: Build Unity iOS Xcode project
+        script: |
+          export APP_VERSION_NAME="1.0.$PROJECT_BUILD_NUMBER"
+          export BUILD_NUMBER="$PROJECT_BUILD_NUMBER"
+          "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
+            -projectPath . \
+            -executeMethod NeonHorde.EditorTools.BuildScript.BuildIOS
+      - name: Return Unity license
+        script: |
+          "$UNITY_BIN" -batchmode -nographics -quit -returnlicense -logFile - || true
+      - name: Install CocoaPods
+        script: |
+          cd build/ios && pod install || true
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+      - name: Increment build number
+        script: |
+          cd build/ios
+          agvtool new-version -all "$PROJECT_BUILD_NUMBER" || true
+      - name: Build .ipa
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - "**/Editor.log"
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+      email:
+        recipients:
+          - choi.sean1991@gmail.com

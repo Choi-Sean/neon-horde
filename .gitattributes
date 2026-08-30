@@ -1,0 +1,28 @@
+# Normalize line endings; keep shell/CI files LF for the macOS build machines.
+* text=auto
+*.sh    text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+
+# Unity YAML assets — treat as text so merges are possible.
+*.cs        text
+*.shader    text
+*.uxml      text
+*.uss       text
+*.asmdef    text
+*.unity     text
+*.asset     text
+*.prefab    text
+*.mat       text
+*.meta      text
+
+# Binary assets (none yet, but future-proofed).
+*.png   binary
+*.jpg   binary
+*.ttf   binary
+*.otf   binary
+*.wav   binary
+*.mp3   binary
+*.ogg   binary
+*.fbx   binary
+*.aac   binary

@@ -1,0 +1,38 @@
+# Unity generated
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# Asset meta data (keep — Unity needs them). Only ignore for folders that don't ship.
+/[Aa]ssets/AssetStoreTools*
+/[Aa]ssets/Plugins/Editor/JetBrains*
+
+# Build outputs
+*.apk
+*.aab
+*.ipa
+*.app
+*.unitypackage
+*.app.zip
+
+# IDE / OS
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.sln
+*.slnx
+*.user
+*.userprefs
+.DS_Store
+Thumbs.db
+
+# Crash / profiler
+sysinfo.txt
+crashlytics-build.properties
