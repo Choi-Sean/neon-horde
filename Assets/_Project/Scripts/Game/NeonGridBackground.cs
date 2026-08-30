@@ -61,20 +61,32 @@ namespace NeonHorde
 
         static Texture2D BuildTexture()
         {
-            const int cell = 32;
+            const int cell = 64;
             var tex = new Texture2D(cell, cell, TextureFormat.RGBA32, false)
             {
                 wrapMode = TextureWrapMode.Repeat,
                 filterMode = FilterMode.Bilinear,
                 name = "neon_grid_tex"
             };
-            Color32 line = Palette.GridLine;
-            Color32 fill = Palette.Background;
-            var px = new Color32[cell * cell];
+            Color line = Palette.GridLine;
+            Color fill = Palette.Background;
+            var px = new Color[cell * cell];
             for (int y = 0; y < cell; y++)
             for (int x = 0; x < cell; x++)
-                px[y * cell + x] = (x < 2 || y < 2) ? line : fill;
-            tex.SetPixels32(px);
+            {
+                // distance (in px) to nearest grid line (x==0 or y==0)
+                float dx = Mathf.Min(x, cell - x);
+                float dy = Mathf.Min(y, cell - y);
+                float d = Mathf.Min(dx, dy);
+                float core = d < 1f ? 1f : 0f;
+                float glow = Mathf.Exp(-d * 0.55f) * 0.6f;
+                float k = Mathf.Clamp01(core + glow);
+                Color c = Color.Lerp(fill, line, k);
+                // faint bright node at intersections
+                if (dx < 2f && dy < 2f) c = line * 1.6f;
+                px[y * cell + x] = c;
+            }
+            tex.SetPixels(px);
             tex.Apply();
             return tex;
         }

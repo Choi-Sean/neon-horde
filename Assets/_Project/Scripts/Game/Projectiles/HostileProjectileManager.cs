@@ -20,7 +20,7 @@ namespace NeonHorde
         void Awake()
         {
             _quad = NeonMesh.Quad;
-            _mat = NeonMesh.NewUnlit(new Color(2.6f, 0.35f, 0.25f, 1f));
+            _mat = NeonMesh.NewGlow(new Color(3.0f, 0.4f, 0.3f, 1f), NeonArt.Tex(NeonShapeKind.Diamond, 80, 0.55f, 0.4f));
             _mBuf = new Matrix4x4[Capacity];
         }
 

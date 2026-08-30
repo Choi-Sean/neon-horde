@@ -37,6 +37,7 @@ namespace NeonHorde.EditorTools
             ApplyToAllQualityLevels(urp);
 
             var profile = CreatePostFxProfile();
+            EnsureAlwaysIncludedShaders();
             BuildGameScene(profile);
             AddSceneToBuild(GameScenePath);
 
@@ -94,23 +95,78 @@ namespace NeonHorde.EditorTools
             QualitySettings.SetQualityLevel(current, false);
         }
 
+        /// <summary>
+        /// The instanced renderers (enemies/projectiles/gems/terrain) build materials at
+        /// runtime via Shader.Find. In a player build that shader is stripped unless it's
+        /// in Always Included Shaders — which is why on-device everything but the player
+        /// was invisible. Force the ones we need into the build.
+        /// </summary>
+        static void EnsureAlwaysIncludedShaders()
+        {
+            string[] wanted =
+            {
+                "Universal Render Pipeline/Unlit",
+                "Universal Render Pipeline/2D/Sprite-Unlit-Default",
+                "Sprites/Default",
+            };
+
+            var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset");
+            if (assets == null || assets.Length == 0) { Debug.LogWarning("[Setup] GraphicsSettings.asset not loadable"); return; }
+            var so = new SerializedObject(assets[0]);
+            var list = so.FindProperty("m_AlwaysIncludedShaders");
+            if (list == null) { Debug.LogWarning("[Setup] m_AlwaysIncludedShaders not found"); return; }
+
+            var have = new System.Collections.Generic.HashSet<string>();
+            for (int i = 0; i < list.arraySize; i++)
+            {
+                var s = list.GetArrayElementAtIndex(i).objectReferenceValue as Shader;
+                if (s != null) have.Add(s.name);
+            }
+
+            foreach (var name in wanted)
+            {
+                if (have.Contains(name)) continue;
+                var shader = Shader.Find(name);
+                if (shader == null) { Debug.LogWarning($"[Setup] shader not found: {name}"); continue; }
+                list.InsertArrayElementAtIndex(list.arraySize);
+                list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = shader;
+            }
+            so.ApplyModifiedProperties();
+            Debug.Log("[Setup] Always Included Shaders ensured.");
+        }
+
         static VolumeProfile CreatePostFxProfile()
         {
-            var existing = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumePath);
-            if (existing != null) return existing;
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumePath);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, VolumePath);
+            }
 
-            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
-            AssetDatabase.CreateAsset(profile, VolumePath);
+            var bloom = profile.TryGet<Bloom>(out var b) ? b : profile.Add<Bloom>(true);
+            bloom.active = true;
+            bloom.threshold.Override(0.75f);
+            bloom.intensity.Override(2.2f);
+            bloom.scatter.Override(0.78f);
+            bloom.tint.Override(new Color(0.9f, 0.95f, 1f));
 
-            var bloom = profile.Add<Bloom>(true);
-            bloom.threshold.Override(0.9f);
-            bloom.intensity.Override(1.1f);
-            bloom.scatter.Override(0.7f);
-
-            var tone = profile.Add<Tonemapping>(true);
+            var tone = profile.TryGet<Tonemapping>(out var tm) ? tm : profile.Add<Tonemapping>(true);
+            tone.active = true;
             tone.mode.Override(TonemappingMode.ACES);
 
+            var vig = profile.TryGet<Vignette>(out var v) ? v : profile.Add<Vignette>(true);
+            vig.active = true;
+            vig.intensity.Override(0.34f);
+            vig.smoothness.Override(0.4f);
+            vig.color.Override(new Color(0.02f, 0.0f, 0.05f));
+
+            var ca = profile.TryGet<ChromaticAberration>(out var c) ? c : profile.Add<ChromaticAberration>(true);
+            ca.active = true;
+            ca.intensity.Override(0.12f);
+
             EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssets();
             return profile;
         }
 
@@ -190,8 +246,10 @@ namespace NeonHorde.EditorTools
             AddIfMissing<HostileProjectileManager>(systems);
             AddIfMissing<PickupManager>(systems);
             AddIfMissing<DamageNumberSystem>(systems);
+            AddIfMissing<NeonVfx>(systems);
             AddIfMissing<FirstRunHint>(systems);
             AddIfMissing<DebugSpawner>(systems);
+            AddIfMissing<DevHud>(systems);
 
             var oldCanvas = GameObject.Find("HUDCanvas");
             if (oldCanvas != null) Object.DestroyImmediate(oldCanvas);
@@ -239,6 +297,7 @@ namespace NeonHorde.EditorTools
             // --- HUD ---
             var hud = NewRect("HUD", root);
             Stretch(hud);
+            hud.gameObject.AddComponent<RuntimeVignette>(); // builds a full-screen vignette Image at runtime
 
             var xpBg = NewImage("XpBarBg", hud, new Color(0.05f, 0.06f, 0.09f, 0.9f), UiSprite());
             AnchorTopStretch(xpBg.rectTransform, 18f);
@@ -376,6 +435,7 @@ namespace NeonHorde.EditorTools
             SetupM1Scene();
             SetupMenuScenes();
             ConfigureBuild();
+            BrandingGen.Apply();
             Debug.Log("[NeonHorde] Setup Everything complete.");
         }
 

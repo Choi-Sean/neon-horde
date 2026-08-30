@@ -57,6 +57,9 @@ namespace NeonHorde
 
                 w.cooldownTimer = Mathf.Max(0.05f, lv.cooldown * ds.cooldownMul * mapCd);
 
+                if (NeonVfx.Instance != null && def.behavior != WeaponBehavior.Aura && def.behavior != WeaponBehavior.Orbit)
+                    NeonVfx.Instance.Flash(origin, def.color * 1.3f, 0.5f, 0.09f);
+
                 switch (def.behavior)
                 {
                     case WeaponBehavior.Linear:

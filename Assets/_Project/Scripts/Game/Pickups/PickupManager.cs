@@ -34,9 +34,9 @@ namespace NeonHorde
         void Awake()
         {
             _quad = NeonMesh.Quad;
-            _matGem = NeonMesh.NewUnlit(Palette.XpGem);
-            _matGold = NeonMesh.NewUnlit(new Color(2.6f, 2.0f, 0.5f, 1f));
-            _matChest = NeonMesh.NewUnlit(new Color(2.4f, 0.7f, 2.4f, 1f));
+            _matGem = NeonMesh.NewGlow(Palette.XpGem * 1.5f, NeonArt.Tex(NeonShapeKind.Diamond, 96, 0.5f, 0.4f));
+            _matGold = NeonMesh.NewGlow(new Color(2.9f, 2.2f, 0.6f, 1f), NeonArt.Tex(NeonShapeKind.Disc, 96, 0.5f, 0.45f));
+            _matChest = NeonMesh.NewGlow(new Color(2.6f, 0.9f, 2.7f, 1f), NeonArt.Tex(NeonShapeKind.Square, 96, 0.5f, 0.35f));
             _mGem = new Matrix4x4[Capacity];
             _mGold = new Matrix4x4[Capacity];
             _mChest = new Matrix4x4[256];
@@ -120,13 +120,13 @@ namespace NeonHorde
                 switch ((PickupKind)g.kind)
                 {
                     case PickupKind.Gem:
-                        _mGem[_nGem++] = M(g.pos, -0.05f, 45f, 0.22f);
+                        _mGem[_nGem++] = M(g.pos, -0.05f, 45f, 0.5f);
                         break;
                     case PickupKind.Gold:
-                        _mGold[_nGold++] = M(g.pos, -0.05f, 0f, 0.28f);
+                        _mGold[_nGold++] = M(g.pos, -0.05f, 0f, 0.55f);
                         break;
                     case PickupKind.Chest:
-                        if (_nChest < _mChest.Length) _mChest[_nChest++] = M(g.pos, -0.05f, 0f, 0.55f);
+                        if (_nChest < _mChest.Length) _mChest[_nChest++] = M(g.pos, -0.05f, 0f, 0.95f);
                         break;
                 }
             }

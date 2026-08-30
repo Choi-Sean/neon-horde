@@ -41,10 +41,10 @@ namespace NeonHorde
         {
             var cam = Camera.main;
             if (cam != null) cam.backgroundColor = t.background;
-            _matBlocker = NeonMesh.NewUnlit(t.terrainColor * 0.5f);
-            _matCrate = NeonMesh.NewUnlit(t.terrainColor);
-            _matSlow = NeonMesh.NewUnlit(new Color(0.4f, 0.7f, 1.4f, 0.5f));
-            _matHazard = NeonMesh.NewUnlit(new Color(2.4f, 0.4f, 0.2f, 0.7f));
+            _matBlocker = NeonMesh.NewGlow(t.terrainColor * 0.85f, NeonArt.Tex(NeonShapeKind.Square, 96, 0.30f, 0.55f), additive: false);
+            _matCrate = NeonMesh.NewGlow(t.terrainColor * 1.3f, NeonArt.Tex(NeonShapeKind.Ring, 96, 0.35f, 0.30f), additive: false);
+            _matSlow = NeonMesh.NewGlow(new Color(0.30f, 0.55f, 1.1f, 0.35f), NeonArt.Glow(96, 3f), additive: true);
+            _matHazard = NeonMesh.NewGlow(new Color(2.6f, 0.5f, 0.18f, 1f), NeonArt.Tex(NeonShapeKind.Spark, 96, 0.55f, 0.4f), additive: true);
         }
 
         void BuildRenderBuffers()

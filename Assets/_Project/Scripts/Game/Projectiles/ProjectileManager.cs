@@ -41,7 +41,7 @@ namespace NeonHorde
         void Awake()
         {
             _quad = NeonMesh.Quad;
-            _mat = NeonMesh.NewUnlit(Palette.Projectile);
+            _mat = NeonMesh.NewGlow(Palette.Projectile * 1.7f, NeonArt.Glow(96, 1.7f));
             _mBuf = new Matrix4x4[Capacity];
         }
 
@@ -153,10 +153,10 @@ namespace NeonHorde
                 float ang = Mathf.Atan2(p.vel.y, p.vel.x) * Mathf.Rad2Deg;
                 Vector3 scale = (ProjKind)p.kind switch
                 {
-                    ProjKind.Straight => new Vector3(0.5f, 0.14f, 1f),
-                    ProjKind.Lob => new Vector3(0.32f, 0.32f, 1f),
-                    ProjKind.Orbit => new Vector3(0.34f, 0.34f, 1f),
-                    _ => new Vector3(0.32f, 0.18f, 1f)
+                    ProjKind.Straight => new Vector3(1.0f, 0.32f, 1f),
+                    ProjKind.Lob => new Vector3(0.55f, 0.55f, 1f),
+                    ProjKind.Orbit => new Vector3(0.6f, 0.6f, 1f),
+                    _ => new Vector3(0.5f, 0.34f, 1f)
                 };
                 _mBuf[i] = Matrix4x4.TRS(new Vector3(p.pos.x, p.pos.y, -0.1f), Quaternion.Euler(0, 0, ang), scale);
             }

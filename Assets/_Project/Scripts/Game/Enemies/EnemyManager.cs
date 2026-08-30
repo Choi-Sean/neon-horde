@@ -65,12 +65,27 @@ namespace NeonHorde
             _mCountByKind = new int[kinds];
             for (int i = 0; i < kinds; i++)
             {
-                _matByKind[i] = NeonMesh.NewUnlit(EnemyCatalog.Get((EnemyId)i).color);
+                var def = EnemyCatalog.Get((EnemyId)i);
+                _matByKind[i] = NeonMesh.NewGlow(def.color * 1.4f, NeonArt.Tex(ShapeFor((EnemyId)i), 128, 0.5f, 0.4f));
                 _mByKind[i] = new Matrix4x4[Capacity];
             }
-            _matElite = NeonMesh.NewUnlit(new Color(2.4f, 2.0f, 0.6f, 1f));
-            _matBoss = NeonMesh.NewUnlit(new Color(2.6f, 0.3f, 1.6f, 1f));
+            _matElite = NeonMesh.NewGlow(new Color(2.6f, 2.1f, 0.7f, 1f), NeonArt.Tex(NeonShapeKind.Star, 160, 0.55f, 0.45f));
+            _matBoss = NeonMesh.NewGlow(new Color(2.8f, 0.35f, 1.8f, 1f), NeonArt.Tex(NeonShapeKind.Star, 192, 0.6f, 0.5f));
         }
+
+        static NeonShapeKind ShapeFor(EnemyId id) => id switch
+        {
+            EnemyId.Walker => NeonShapeKind.Disc,
+            EnemyId.Swarmer => NeonShapeKind.Triangle,
+            EnemyId.Tank => NeonShapeKind.Hexagon,
+            EnemyId.Spitter => NeonShapeKind.Diamond,
+            EnemyId.Exploder => NeonShapeKind.Spark,
+            EnemyId.Splitter => NeonShapeKind.Square,
+            EnemyId.Splitterling => NeonShapeKind.Disc,
+            EnemyId.Phantom => NeonShapeKind.Ring,
+            EnemyId.FrostTank => NeonShapeKind.Hexagon,
+            _ => NeonShapeKind.Disc,
+        };
 
         void Start()
         {
@@ -110,6 +125,7 @@ namespace NeonHorde
             {
                 BossActive = true;
                 if (_run != null) _run.RaiseBossSpawn();
+                if (NeonVfx.Instance != null) NeonVfx.Instance.Ring(pos, new Color(2.6f, 0.4f, 1.6f, 1f), 4f, 0.7f);
             }
         }
 
@@ -304,12 +320,16 @@ namespace NeonHorde
             e.hp -= dmg;
             e.hitFlash = 0.08f;
             if (_dmgNumbers != null) _dmgNumbers.Report(e.pos, dmg);
+            if (NeonVfx.Instance != null && Random.value < 0.35f)
+                NeonVfx.Instance.Spark(e.pos, EnemyCatalog.Get((EnemyId)e.id).color, 0.5f);
             if (e.hp > 0f) return false;
 
             EnemyDef def = EnemyCatalog.Get((EnemyId)e.id);
             bool elite = (e.flags & (byte)EFlag.Elite) != 0;
             bool boss = (e.flags & (byte)EFlag.Boss) != 0;
             Vector2 at = e.pos;
+            if (NeonVfx.Instance != null)
+                NeonVfx.Instance.Burst(at, def.color * 1.3f, boss ? 3.5f : elite ? 1.8f : 0.9f, boss ? 24 : elite ? 14 : 8);
             SeededRng rng = _run != null ? _run.Rng : null;
 
             if (_pickups != null)
@@ -353,7 +373,7 @@ namespace NeonHorde
             for (int i = 0; i < _count; i++)
             {
                 ref E e = ref _e[i];
-                float s = e.radius * 2f;
+                float s = e.radius * 2.8f;
                 var m = Matrix4x4.TRS(new Vector3(e.pos.x, e.pos.y, 0f), Quaternion.identity, new Vector3(s, s, 1f));
                 if ((e.flags & (byte)EFlag.Boss) != 0) { if (_mBossN < _mBoss.Length) _mBoss[_mBossN++] = m; }
                 else if ((e.flags & (byte)EFlag.Elite) != 0) { if (_mEliteN < _mElite.Length) _mElite[_mEliteN++] = m; }

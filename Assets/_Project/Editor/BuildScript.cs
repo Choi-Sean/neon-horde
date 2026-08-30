@@ -65,6 +65,7 @@ namespace NeonHorde.EditorTools
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.SetIl2CppCompilerConfiguration(android, Il2CppCompilerConfiguration.Debug);
             PlayerSettings.SetIl2CppCodeGeneration(android, UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
+            UseDebugSigning(); // device-test APK: always debug-signed
             var outDir = Path.GetFullPath("build/android");
             Directory.CreateDirectory(outDir);
             Build(new BuildPlayerOptions
@@ -120,9 +121,18 @@ namespace NeonHorde.EditorTools
             }
             else
             {
-                PlayerSettings.Android.useCustomKeystore = false;
+                UseDebugSigning();
                 Debug.LogWarning("[Build] Android: no upload keystore/password — using DEBUG key (not Play-uploadable).");
             }
+        }
+
+        static void UseDebugSigning()
+        {
+            PlayerSettings.Android.useCustomKeystore = false;
+            PlayerSettings.Android.keystoreName = string.Empty;
+            PlayerSettings.Android.keystorePass = string.Empty;
+            PlayerSettings.Android.keyaliasName = string.Empty;
+            PlayerSettings.Android.keyaliasPass = string.Empty;
         }
 
         static void ApplyVersion()

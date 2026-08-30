@@ -134,6 +134,14 @@ namespace NeonHorde
 
         void OnLevelUp()
         {
+            if (NeonVfx.Instance != null)
+            {
+                var c = CharacterCatalog.Get(_run != null ? _run.State.characterId : CharacterId.Pulse).color;
+                NeonVfx.Instance.Ring(transform.position, c * 1.4f, 3.5f, 0.5f);
+                NeonVfx.Instance.Flash(transform.position, c * 1.6f, 2f, 0.25f);
+            }
+            ScreenShake.Add(0.35f);
+
             if (_run != null && CharacterCatalog.Get(_run.State.characterId).ability == CharacterAbility.LevelUpBlast
                 && _enemies != null)
                 _enemies.DamageAllInRadius(transform.position, 3.2f, 30f);
