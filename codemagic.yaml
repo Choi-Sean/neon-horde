@@ -6,9 +6,9 @@
 #     - App Store Connect: API 키를 "NeonHorde ASC" 이름으로 등록 (Issuer ID + Key ID + .p8)
 #   앱 → Environment variables (그룹으로 묶기):
 #     - group "unity":
-#         Unity Pro/Plus  -> UNITY_SERIAL, UNITY_EMAIL, UNITY_PASSWORD
-#         Unity Personal  -> UNITY_LICENSE (.ulf 파일 전체 내용을 값으로)  ※ 아래 문서 참고
-#         https://docs.codemagic.io/knowledge-others/manual-unity-license-activation/
+#         Unity Personal  -> UNITY_EMAIL, UNITY_PASSWORD  (Unity 계정, 2FA 반드시 해제)
+#         Unity Pro/Plus  -> 위 + UNITY_SERIAL
+#         (Personal .alf->.ulf 수동 활성화는 Unity가 2024년에 폐지함)
 #     - group "android_keystore":
 #         CM_KEYSTORE (base64), CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_ALIAS_PASSWORD
 #     - group "google_play":
