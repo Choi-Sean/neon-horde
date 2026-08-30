@@ -53,6 +53,12 @@ namespace NeonHorde.EditorTools
         {
             ApplyVersion();
             EditorUserBuildSettings.buildAppBundle = false;
+            // Lighter IL2CPP so the native (clang) compile doesn't OOM on a dev box.
+            var android = UnityEditor.Build.NamedBuildTarget.Android;
+            PlayerSettings.SetScriptingBackend(android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            PlayerSettings.SetIl2CppCompilerConfiguration(android, Il2CppCompilerConfiguration.Debug);
+            PlayerSettings.SetIl2CppCodeGeneration(android, UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
             var outDir = Path.GetFullPath("build/android");
             Directory.CreateDirectory(outDir);
             Build(new BuildPlayerOptions

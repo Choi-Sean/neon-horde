@@ -36,3 +36,7 @@ Thumbs.db
 # Crash / profiler
 sysinfo.txt
 crashlytics-build.properties
+
+# Unity Android build intermediates
+/.utmp/
+/build/
