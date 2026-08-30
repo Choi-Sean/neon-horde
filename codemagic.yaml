@@ -76,6 +76,7 @@ workflows:
       cache_paths:
         - $HOME/Library/Unity/cache
         - $CM_BUILD_DIR/Library
+        - /Applications/Unity/Hub/Editor
     scripts:
       - *install_unity
       - *activate_license
@@ -118,6 +119,7 @@ workflows:
       cache_paths:
         - $HOME/Library/Unity/cache
         - $CM_BUILD_DIR/Library
+        - /Applications/Unity/Hub/Editor
     scripts:
       - *install_unity
       - *activate_license
