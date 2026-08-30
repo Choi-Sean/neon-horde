@@ -40,15 +40,29 @@ definitions:
   activate_license: &activate_license
     name: Activate Unity license
     script: |
+      set -e
       if [ -n "$UNITY_SERIAL" ]; then
+        # Unity Pro/Plus
         "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
           -serial "$UNITY_SERIAL" -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" || true
       elif [ -n "$UNITY_LICENSE" ]; then
+        # Unity Personal — .ulf from manual activation
         printf '%s' "$UNITY_LICENSE" > "$CM_BUILD_DIR/unity.ulf"
         "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
           -manualLicenseFile "$CM_BUILD_DIR/unity.ulf" || true
       else
-        echo "!! No Unity license env var (UNITY_SERIAL or UNITY_LICENSE). Build will likely fail."
+        # No license yet: emit a .alf for this CI machine so you can activate it.
+        echo "=== No Unity license set. Generating manual activation file (.alf) ==="
+        "$UNITY_BIN" -batchmode -nographics -createManualActivationFile -quit -logFile - || true
+        mkdir -p "$CM_BUILD_DIR/activation"
+        cp Unity_v*.alf "$CM_BUILD_DIR/activation/" 2>/dev/null || \
+          find / -maxdepth 6 -name 'Unity_v*.alf' -exec cp {} "$CM_BUILD_DIR/activation/" \; 2>/dev/null || true
+        echo ""
+        echo ">>> NEXT: download activation/Unity_v*.alf from this build's artifacts."
+        echo ">>>       Go to https://license.unity3d.com/manual , upload it, pick Unity Personal,"
+        echo ">>>       download the .ulf, paste its FULL contents into a secure env var UNITY_LICENSE"
+        echo ">>>       (group 'unity'), then run the build again."
+        exit 1
       fi
 
   return_license: &return_license
@@ -92,6 +106,7 @@ workflows:
       - build/android/*.aab
       - build/android/*.apk
       - "**/Editor.log"
+      - activation/Unity_v*.alf
     publishing:
       google_play:
         credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
@@ -156,6 +171,7 @@ workflows:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - "**/Editor.log"
+      - activation/Unity_v*.alf
     publishing:
       app_store_connect:
         auth: integration
