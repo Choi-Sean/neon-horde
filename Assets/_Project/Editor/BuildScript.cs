@@ -65,7 +65,8 @@ namespace NeonHorde.EditorTools
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.SetIl2CppCompilerConfiguration(android, Il2CppCompilerConfiguration.Debug);
             PlayerSettings.SetIl2CppCodeGeneration(android, UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
-            UseDebugSigning(); // device-test APK: always debug-signed
+            UseDebugSigning(); // device-test APK: debug-signed (Play needs the keystore build)
+            EditorUserBuildSettings.androidCreateSymbols = AndroidCreateSymbols.Disabled;
             var outDir = Path.GetFullPath("build/android");
             Directory.CreateDirectory(outDir);
             Build(new BuildPlayerOptions
@@ -74,9 +75,9 @@ namespace NeonHorde.EditorTools
                 target = BuildTarget.Android,
                 targetGroup = BuildTargetGroup.Android,
                 locationPathName = Path.Combine(outDir, "NeonHorde.apk"),
-                // Development => debug Gradle variant: skips lintVitalAnalyzeRelease + minify.
-                // (no AllowDebugging: its IL2CPP debugger codegen crashes on graphics bindings)
-                options = BuildOptions.Development
+                // release Gradle variant (smaller, symbols stripped); gradleTemplate keeps
+                // the daemon off so lintVitalAnalyzeRelease no longer OOMs.
+                options = BuildOptions.None
             });
         }
 
