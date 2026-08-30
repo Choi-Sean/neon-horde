@@ -104,6 +104,46 @@ namespace NeonHorde
             return s;
         }
 
+        /// <summary>
+        /// Rounded-rect sprite for UI: translucent fill + a bright glowing border.
+        /// Returned sprite has a 4-px border set so it 9-slices cleanly.
+        /// </summary>
+        public static Sprite Panel(int size = 64, int radius = 18, float border = 3f, float fillAlpha = 0.55f, float borderGlow = 6f)
+        {
+            string key = $"panel:{size}:{radius}:{border}:{fillAlpha:0.00}";
+            if (SpriteCache.TryGetValue(key, out var cached)) return cached;
+
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float sd = RoundRectSD(x + 0.5f, y + 0.5f, size, radius);
+                float fill = sd < 0f ? fillAlpha : 0f;
+                float edge = Mathf.Clamp01(1f - Mathf.Abs(sd) / border);
+                float glow = Mathf.Exp(-Mathf.Max(0f, sd) / borderGlow) * 0.5f;
+                float a = Mathf.Clamp01(Mathf.Max(fill, Mathf.Max(edge, glow)));
+                byte br = (byte)(Mathf.Lerp(0.35f, 1f, Mathf.Max(edge, glow)) * 255);
+                px[y * size + x] = new Color32(br, br, br, (byte)(a * 255));
+            }
+            t.SetPixels32(px); t.Apply();
+            int b = Mathf.Clamp(radius, 6, size / 2 - 2);
+            var s = UnityEngine.Sprite.Create(t, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size, 0, SpriteMeshType.FullRect, new Vector4(b, b, b, b));
+            s.name = "neon_panel";
+            SpriteCache[key] = s;
+            return s;
+        }
+
+        static float RoundRectSD(float x, float y, float size, float radius)
+        {
+            float hx = size * 0.5f, hy = size * 0.5f;
+            float qx = Mathf.Abs(x - hx) - (hx - radius);
+            float qy = Mathf.Abs(y - hy) - (hy - radius);
+            float outside = Mathf.Sqrt(Sq(Mathf.Max(qx, 0f)) + Sq(Mathf.Max(qy, 0f)));
+            float inside = Mathf.Min(Mathf.Max(qx, qy), 0f);
+            return outside + inside - radius;
+        }
+
         static Texture2D Build(NeonShapeKind kind, int size, float glow, float core)
         {
             var t = NewTex(size);

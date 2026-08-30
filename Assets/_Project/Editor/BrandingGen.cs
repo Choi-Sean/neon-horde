@@ -7,7 +7,7 @@ namespace NeonHorde.EditorTools
     /// <summary>Generates the neon logo mark + app icon PNGs and wires splash / icons.</summary>
     public static class BrandingGen
     {
-        const string Dir = "Assets/_Project/Art/Branding";
+        const string Dir = "Assets/_Project/Resources/branding";
         const string MarkPath = Dir + "/logo_mark.png";
         const string IconPath = Dir + "/icon_1024.png";
 

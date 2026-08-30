@@ -38,7 +38,12 @@ namespace NeonHorde
             scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
             _root = (RectTransform)canvasGo.transform;
+
+            gameObject.AddComponent<MenuBackdrop>();
         }
+
+        Image _logo;
+        Text _charLabelSub;
 
         void Start()
         {
@@ -60,65 +65,82 @@ namespace NeonHorde
             OpenAccount(nudge: true);
         }
 
+        Text _goldChip, _coreChip;
+
         void BuildHome()
         {
-            var bg = UiKit.Image("BG", _root, new Color(0.02f, 0.02f, 0.04f, 1f));
-            UiKit.Stretch(bg.rectTransform);
+            // logo mark
+            var logo = UiKit.Rect("Logo", _root);
+            logo.anchorMin = logo.anchorMax = new Vector2(0.5f, 1f);
+            logo.pivot = new Vector2(0.5f, 1f);
+            logo.sizeDelta = new Vector2(280, 280);
+            logo.anchoredPosition = new Vector2(0, -140);
+            _logo = logo.gameObject.AddComponent<Image>();
+            _logo.raycastTarget = false;
+            var loaded = Resources.Load<Sprite>("branding/logo_mark");
+            _logo.sprite = loaded != null ? loaded : NeonArt.Sprite(NeonShapeKind.Star, 256, 0.6f, 0.5f);
 
-            var title = UiKit.Text("Title", _root, "NEON HORDE", 90);
-            UiKit.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(1000, 140), new Vector2(0, -220));
-            title.color = UiKit.Accent;
+            UiKit.Title("NEON HORDE", _root, new Vector2(0.5f, 1f), new Vector2(0, -470), 92, UiKit.Accent);
 
-            _currency = UiKit.Text("Currency", _root, "", 40);
-            UiKit.Place(_currency.rectTransform, new Vector2(0.5f, 1f), new Vector2(1000, 60), new Vector2(0, -340));
+            // currency chips
+            _goldChip = UiKit.Chip("GoldChip", _root, "0", UiKit.Gold, NeonShapeKind.Disc);
+            UiKit.Place(_goldChip.rectTransform.parent as RectTransform, new Vector2(0.5f, 1f), new Vector2(280, 76), new Vector2(-150, -600));
+            _coreChip = UiKit.Chip("CoreChip", _root, "0", UiKit.Core, NeonShapeKind.Diamond);
+            UiKit.Place(_coreChip.rectTransform.parent as RectTransform, new Vector2(0.5f, 1f), new Vector2(280, 76), new Vector2(150, -600));
 
             _charLabel = UiKit.Text("Char", _root, "", 34);
-            UiKit.Place(_charLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(1000, 50), new Vector2(0, 250));
+            UiKit.Place(_charLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(1000, 48), new Vector2(0, 300));
+            _charLabel.color = new Color(0.7f, 0.9f, 1f, 1f);
 
-            var play = UiKit.Button("Play", _root, Loc.T("play"), 60, out _);
-            UiKit.Place((RectTransform)play.transform, new Vector2(0.5f, 0.5f), new Vector2(760, 180), new Vector2(0, 90));
+            var play = UiKit.Button("Play", _root, Loc.T("play"), 62, out _, UiKit.Accent);
+            UiKit.Place((RectTransform)play.transform, new Vector2(0.5f, 0.5f), new Vector2(780, 190), new Vector2(0, 150));
             play.onClick.AddListener(() => { RunConfig.Clear(); SceneManager.LoadScene("Game"); });
 
-            var daily = UiKit.Button("Daily", _root, Loc.T("daily"), 40, out _);
-            UiKit.Place((RectTransform)daily.transform, new Vector2(0.5f, 0.5f), new Vector2(760, 96), new Vector2(0, -30));
+            var daily = UiKit.Button("Daily", _root, Loc.T("daily"), 40, out _, new Color(1.6f, 1.1f, 0.3f, 1f));
+            UiKit.Place((RectTransform)daily.transform, new Vector2(0.5f, 0.5f), new Vector2(780, 100), new Vector2(0, 20));
             daily.onClick.AddListener(() =>
             {
                 RunConfig.SetRun(_meta.SelectedCharacter, DailySeed(), daily: true);
                 SceneManager.LoadScene("Game");
             });
 
-            var chr = UiKit.Button("CharacterBtn", _root, Loc.T("character"), 44, out _);
-            UiKit.Place((RectTransform)chr.transform, new Vector2(0.5f, 0.5f), new Vector2(760, 116), new Vector2(0, -150));
-            chr.onClick.AddListener(OpenCharacters);
+            AddNav("CharacterBtn", Loc.T("character"), -110, OpenCharacters);
+            AddNav("ShopBtn", Loc.T("shop"), -240, OpenShop);
+            AddNav("QuestBtn", Loc.T("quests"), -370, OpenQuests);
 
-            var shop = UiKit.Button("ShopBtn", _root, Loc.T("shop"), 44, out _);
-            UiKit.Place((RectTransform)shop.transform, new Vector2(0.5f, 0.5f), new Vector2(760, 116), new Vector2(0, -290));
-            shop.onClick.AddListener(OpenShop);
-
-            var quests = UiKit.Button("QuestBtn", _root, Loc.T("quests"), 44, out _);
-            UiKit.Place((RectTransform)quests.transform, new Vector2(0.5f, 0.5f), new Vector2(760, 116), new Vector2(0, -430));
-            quests.onClick.AddListener(OpenQuests);
-
-            var store = UiKit.Button("StoreBtn", _root, Loc.T("store"), 36, out _);
-            UiKit.Place((RectTransform)store.transform, new Vector2(0.5f, 0f), new Vector2(360, 96), new Vector2(-200, 260));
+            var store = UiKit.Button("StoreBtn", _root, Loc.T("store"), 34, out _, new Color(1.4f, 0.6f, 1.6f, 1f));
+            UiKit.Place((RectTransform)store.transform, new Vector2(0.5f, 0f), new Vector2(370, 92), new Vector2(-200, 250));
             store.onClick.AddListener(OpenStore);
 
-            var settings = UiKit.Button("SettingsBtn", _root, Loc.T("settings"), 36, out _);
-            UiKit.Place((RectTransform)settings.transform, new Vector2(0.5f, 0f), new Vector2(360, 96), new Vector2(200, 260));
+            var settings = UiKit.Button("SettingsBtn", _root, Loc.T("settings"), 34, out _, new Color(0.6f, 0.8f, 1f, 1f));
+            UiKit.Place((RectTransform)settings.transform, new Vector2(0.5f, 0f), new Vector2(370, 92), new Vector2(200, 250));
             settings.onClick.AddListener(OpenSettings);
 
             // account banner
-            _bannerRoot = UiKit.Image("Banner", _root, new Color(0.14f, 0.10f, 0.04f, 1f)).gameObject;
+            var bannerImg = _root.gameObject == null ? null : new GameObject("Banner", typeof(RectTransform)).AddComponent<Image>();
+            _bannerRoot = bannerImg.gameObject;
+            bannerImg.transform.SetParent(_root, false);
+            bannerImg.sprite = NeonArt.Panel(48, 16, 2f, 0.4f, 4f);
+            bannerImg.type = UnityEngine.UI.Image.Type.Sliced;
+            bannerImg.color = new Color(1.4f, 0.9f, 0.3f, 1f);
             var brt = (RectTransform)_bannerRoot.transform;
             brt.anchorMin = new Vector2(0.5f, 0f); brt.anchorMax = new Vector2(0.5f, 0f);
-            brt.pivot = new Vector2(0.5f, 0f); brt.sizeDelta = new Vector2(1040, 130); brt.anchoredPosition = new Vector2(0, 110);
-            _bannerLabel = UiKit.Text("txt", brt, "", 26, TextAnchor.MiddleLeft);
-            UiKit.Place(_bannerLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(700, 110), new Vector2(-120, 0));
-            var linkBtn = UiKit.Button("link", brt, "연결", 30, out _);
-            UiKit.Place((RectTransform)linkBtn.transform, new Vector2(1f, 0.5f), new Vector2(220, 100), new Vector2(-130, 0));
+            brt.pivot = new Vector2(0.5f, 0f); brt.sizeDelta = new Vector2(1000, 140); brt.anchoredPosition = new Vector2(0, 100);
+            _bannerLabel = UiKit.Text("txt", brt, "", 25, TextAnchor.MiddleLeft);
+            UiKit.Place(_bannerLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(680, 120), new Vector2(-130, 0));
+            _bannerLabel.color = Color.white;
+            var linkBtn = UiKit.Button("link", brt, "연결", 30, out _, new Color(0.2f, 1.4f, 1.9f, 1f));
+            UiKit.Place((RectTransform)linkBtn.transform, new Vector2(1f, 0.5f), new Vector2(210, 100), new Vector2(-120, 0));
             linkBtn.onClick.AddListener(() => OpenAccount(false));
 
             RefreshHome();
+        }
+
+        void AddNav(string name, string label, float y, UnityEngine.Events.UnityAction onClick)
+        {
+            var b = UiKit.Button(name, _root, label, 42, out _, new Color(0.16f, 0.55f, 0.9f, 1f));
+            UiKit.Place((RectTransform)b.transform, new Vector2(0.5f, 0.5f), new Vector2(780, 118), new Vector2(0, y));
+            b.onClick.AddListener(onClick);
         }
 
         static int DailySeed()
@@ -133,8 +155,9 @@ namespace NeonHorde
         {
             if (_meta != null)
             {
-                _currency.text = $"골드 {_meta.Gold}      코어 {_meta.Cores}";
-                _charLabel.text = $"선택: {CharacterCatalog.Get(_meta.SelectedCharacter).name}";
+                if (_goldChip != null) _goldChip.text = _meta.Gold.ToString();
+                if (_coreChip != null) _coreChip.text = _meta.Cores.ToString();
+                _charLabel.text = $"{CharacterCatalog.Get(_meta.SelectedCharacter).name}  ·  {CharacterCatalog.Get(_meta.SelectedCharacter).abilityText}";
             }
             if (_bannerRoot != null)
             {
