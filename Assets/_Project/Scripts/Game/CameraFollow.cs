@@ -10,7 +10,11 @@ namespace NeonHorde
 
         Camera _cam;
 
-        void Awake() => _cam = GetComponent<Camera>();
+        void Awake()
+        {
+            _cam = GetComponent<Camera>();
+            if (_cam != null) _cam.orthographicSize = Balance.CameraOrthoSize;
+        }
 
         void LateUpdate()
         {

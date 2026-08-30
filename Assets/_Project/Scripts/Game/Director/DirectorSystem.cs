@@ -35,14 +35,14 @@ namespace NeonHorde
             RunState st = _run.State;
             float t = st.time;
 
-            float rate = Mathf.Min(2f + t * 0.35f, 70f) * st.stats.enemyRateMul;
+            float rate = Mathf.Min(3.5f + t * 0.4f, 60f) * st.stats.enemyRateMul;
             _accum += rate * dt;
             int n = Mathf.FloorToInt(_accum);
             _accum -= n;
             for (int i = 0; i < n; i++)
             {
                 if (_enemies.Count >= GameConfig.MaxEnemiesOnScreen) { _accum = 0f; break; }
-                _enemies.Spawn(st.map != null ? st.map.RollEnemy(_run.Rng) : EnemyId.Walker, SpawnPos(11f, 15f));
+                _enemies.Spawn(st.map != null ? st.map.RollEnemy(_run.Rng) : EnemyId.Walker, SpawnPos(9f, 13f));
             }
 
             _eliteTimer -= dt;

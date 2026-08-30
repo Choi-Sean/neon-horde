@@ -11,17 +11,17 @@ namespace NeonHorde
 
         readonly P[] _p = new P[Capacity];
         int _count;
+        public int Count => _count;
 
-        Mesh _quad;
-        Material _mat;
-        Matrix4x4[] _mBuf;
+        SpritePool _pool;
+        Sprite _sprite;
+        static readonly Color Tint = new Color(3.0f, 0.4f, 0.3f, 1f);
         PlayerController _player;
 
         void Awake()
         {
-            _quad = NeonMesh.Quad;
-            _mat = NeonMesh.NewGlow(new Color(3.0f, 0.4f, 0.3f, 1f), NeonArt.Tex(NeonShapeKind.Diamond, 80, 0.55f, 0.4f));
-            _mBuf = new Matrix4x4[Capacity];
+            _sprite = NeonArt.Sprite(NeonShapeKind.Diamond, 80, 0.55f, 0.4f);
+            _pool = new SpritePool("HostileProjSprites", 9, transform);
         }
 
         void Start() => _player = FindFirstObjectByType<PlayerController>();
@@ -68,10 +68,12 @@ namespace NeonHorde
 
         void LateUpdate()
         {
+            if (_pool == null) return;
+            float spin = Time.time * 220f;
+            _pool.Begin();
             for (int i = 0; i < _count; i++)
-                _mBuf[i] = Matrix4x4.TRS(new Vector3(_p[i].pos.x, _p[i].pos.y, -0.1f),
-                    Quaternion.identity, new Vector3(0.3f, 0.3f, 1f));
-            NeonMesh.RenderInstanced(_mat, _quad, _mBuf, _count);
+                _pool.Draw(_sprite, _p[i].pos, -0.1f, Tint, 0.55f, spin);
+            _pool.End();
         }
     }
 }

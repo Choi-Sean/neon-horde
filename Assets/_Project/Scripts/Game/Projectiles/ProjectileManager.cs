@@ -29,10 +29,11 @@ namespace NeonHorde
 
         readonly P[] _p = new P[Capacity];
         int _count;
+        public int Count => _count;
 
-        Mesh _quad;
-        Material _mat;
-        Matrix4x4[] _mBuf;
+        SpritePool _pool;
+        Sprite _sprite;
+        static readonly Color Tint = Palette.Projectile * 1.7f;
 
         EnemyManager _enemies;
         Arena _arena;
@@ -40,9 +41,8 @@ namespace NeonHorde
 
         void Awake()
         {
-            _quad = NeonMesh.Quad;
-            _mat = NeonMesh.NewGlow(Palette.Projectile * 1.7f, NeonArt.Glow(96, 1.7f));
-            _mBuf = new Matrix4x4[Capacity];
+            _sprite = NeonArt.GlowSprite(96, 1.7f);
+            _pool = new SpritePool("FriendlyProjSprites", 14, transform);
         }
 
         void Start()
@@ -147,20 +147,22 @@ namespace NeonHorde
 
         void LateUpdate()
         {
+            if (_pool == null) return;
+            _pool.Begin();
             for (int i = 0; i < _count; i++)
             {
                 ref P p = ref _p[i];
                 float ang = Mathf.Atan2(p.vel.y, p.vel.x) * Mathf.Rad2Deg;
-                Vector3 scale = (ProjKind)p.kind switch
+                Vector2 scale = (ProjKind)p.kind switch
                 {
-                    ProjKind.Straight => new Vector3(1.0f, 0.32f, 1f),
-                    ProjKind.Lob => new Vector3(0.55f, 0.55f, 1f),
-                    ProjKind.Orbit => new Vector3(0.6f, 0.6f, 1f),
-                    _ => new Vector3(0.5f, 0.34f, 1f)
+                    ProjKind.Straight => new Vector2(1.0f, 0.32f),
+                    ProjKind.Lob => new Vector2(0.55f, 0.55f),
+                    ProjKind.Orbit => new Vector2(0.6f, 0.6f),
+                    _ => new Vector2(0.5f, 0.34f)
                 };
-                _mBuf[i] = Matrix4x4.TRS(new Vector3(p.pos.x, p.pos.y, -0.1f), Quaternion.Euler(0, 0, ang), scale);
+                _pool.Draw(_sprite, p.pos, -0.1f, Tint, scale, ang);
             }
-            NeonMesh.RenderInstanced(_mat, _quad, _mBuf, _count);
+            _pool.End();
         }
     }
 }

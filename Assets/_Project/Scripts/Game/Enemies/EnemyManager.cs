@@ -35,14 +35,12 @@ namespace NeonHorde
         readonly SpatialHash _hash = new SpatialHash(1.0f);
         readonly List<int> _neighbors = new List<int>(64);
 
-        Mesh _quad;
-        Material[] _matByKind;
-        Material _matElite, _matBoss;
-        Matrix4x4[][] _mByKind;
-        int[] _mCountByKind;
-        Matrix4x4[] _mElite = new Matrix4x4[256];
-        Matrix4x4[] _mBoss = new Matrix4x4[4];
-        int _mEliteN, _mBossN;
+        SpritePool _pool;
+        Sprite[] _spriteByKind;
+        Color[] _colorByKind;
+        Sprite _spriteElite, _spriteBoss;
+        static readonly Color EliteTint = new Color(2.6f, 2.1f, 0.7f, 1f);
+        static readonly Color BossTint = new Color(2.8f, 0.35f, 1.8f, 1f);
 
         PlayerController _player;
         RunManager _run;
@@ -58,19 +56,18 @@ namespace NeonHorde
 
         void Awake()
         {
-            _quad = NeonMesh.Quad;
             int kinds = EnemyCatalog.Count;
-            _matByKind = new Material[kinds];
-            _mByKind = new Matrix4x4[kinds][];
-            _mCountByKind = new int[kinds];
+            _spriteByKind = new Sprite[kinds];
+            _colorByKind = new Color[kinds];
             for (int i = 0; i < kinds; i++)
             {
                 var def = EnemyCatalog.Get((EnemyId)i);
-                _matByKind[i] = NeonMesh.NewGlow(def.color * 1.4f, NeonArt.Tex(ShapeFor((EnemyId)i), 128, 0.5f, 0.4f));
-                _mByKind[i] = new Matrix4x4[Capacity];
+                _spriteByKind[i] = NeonArt.Sprite(ShapeFor((EnemyId)i), 128, 0.5f, 0.4f);
+                _colorByKind[i] = def.color * 1.4f;
             }
-            _matElite = NeonMesh.NewGlow(new Color(2.6f, 2.1f, 0.7f, 1f), NeonArt.Tex(NeonShapeKind.Star, 160, 0.55f, 0.45f));
-            _matBoss = NeonMesh.NewGlow(new Color(2.8f, 0.35f, 1.8f, 1f), NeonArt.Tex(NeonShapeKind.Star, 192, 0.6f, 0.5f));
+            _spriteElite = NeonArt.Sprite(NeonShapeKind.Star, 160, 0.55f, 0.45f);
+            _spriteBoss = NeonArt.Sprite(NeonShapeKind.Star, 192, 0.6f, 0.5f);
+            _pool = new SpritePool("EnemySprites", 6, transform);
         }
 
         static NeonShapeKind ShapeFor(EnemyId id) => id switch
@@ -367,23 +364,21 @@ namespace NeonHorde
 
         void LateUpdate()
         {
-            for (int k = 0; k < _mCountByKind.Length; k++) _mCountByKind[k] = 0;
-            _mEliteN = 0; _mBossN = 0;
-
+            if (_pool == null) return;
+            _pool.Begin();
             for (int i = 0; i < _count; i++)
             {
                 ref E e = ref _e[i];
-                float s = e.radius * 2.8f;
-                var m = Matrix4x4.TRS(new Vector3(e.pos.x, e.pos.y, 0f), Quaternion.identity, new Vector3(s, s, 1f));
-                if ((e.flags & (byte)EFlag.Boss) != 0) { if (_mBossN < _mBoss.Length) _mBoss[_mBossN++] = m; }
-                else if ((e.flags & (byte)EFlag.Elite) != 0) { if (_mEliteN < _mElite.Length) _mElite[_mEliteN++] = m; }
-                else _mByKind[e.id][_mCountByKind[e.id]++] = m;
-            }
+                bool boss = (e.flags & (byte)EFlag.Boss) != 0;
+                bool elite = !boss && (e.flags & (byte)EFlag.Elite) != 0;
 
-            for (int k = 0; k < _mByKind.Length; k++)
-                NeonMesh.RenderInstanced(_matByKind[k], _quad, _mByKind[k], _mCountByKind[k]);
-            NeonMesh.RenderInstanced(_matElite, _quad, _mElite, _mEliteN);
-            NeonMesh.RenderInstanced(_matBoss, _quad, _mBoss, _mBossN);
+                Sprite sprite = boss ? _spriteBoss : elite ? _spriteElite : _spriteByKind[e.id];
+                Color col = boss ? BossTint : elite ? EliteTint : _colorByKind[e.id];
+                if (e.hitFlash > 0f) col = Color.Lerp(col, Color.white * 2.2f, 0.7f);
+
+                _pool.Draw(sprite, e.pos, 0f, col, e.radius * 2.8f);
+            }
+            _pool.End();
         }
     }
 }

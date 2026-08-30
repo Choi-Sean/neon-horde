@@ -22,24 +22,23 @@ namespace NeonHorde
 
         readonly G[] _g = new G[Capacity];
         int _count;
+        public int Count => _count;
 
-        Mesh _quad;
-        Material _matGem, _matGold, _matChest;
-        Matrix4x4[] _mGem, _mGold, _mChest;
-        int _nGem, _nGold, _nChest;
+        SpritePool _pool;
+        Sprite _sprGem, _sprGold, _sprChest;
+        static readonly Color GemTint = Palette.XpGem * 1.5f;
+        static readonly Color GoldTint = new Color(2.9f, 2.2f, 0.6f, 1f);
+        static readonly Color ChestTint = new Color(2.6f, 0.9f, 2.7f, 1f);
 
         PlayerController _player;
         RunManager _run;
 
         void Awake()
         {
-            _quad = NeonMesh.Quad;
-            _matGem = NeonMesh.NewGlow(Palette.XpGem * 1.5f, NeonArt.Tex(NeonShapeKind.Diamond, 96, 0.5f, 0.4f));
-            _matGold = NeonMesh.NewGlow(new Color(2.9f, 2.2f, 0.6f, 1f), NeonArt.Tex(NeonShapeKind.Disc, 96, 0.5f, 0.45f));
-            _matChest = NeonMesh.NewGlow(new Color(2.6f, 0.9f, 2.7f, 1f), NeonArt.Tex(NeonShapeKind.Square, 96, 0.5f, 0.35f));
-            _mGem = new Matrix4x4[Capacity];
-            _mGold = new Matrix4x4[Capacity];
-            _mChest = new Matrix4x4[256];
+            _sprGem = NeonArt.Sprite(NeonShapeKind.Diamond, 96, 0.5f, 0.4f);
+            _sprGold = NeonArt.Sprite(NeonShapeKind.Disc, 96, 0.5f, 0.45f);
+            _sprChest = NeonArt.Sprite(NeonShapeKind.Square, 96, 0.5f, 0.35f);
+            _pool = new SpritePool("PickupSprites", 5, transform);
         }
 
         void Start()
@@ -113,29 +112,25 @@ namespace NeonHorde
 
         void LateUpdate()
         {
-            _nGem = _nGold = _nChest = 0;
+            if (_pool == null) return;
+            _pool.Begin();
             for (int i = 0; i < _count; i++)
             {
                 ref G g = ref _g[i];
                 switch ((PickupKind)g.kind)
                 {
                     case PickupKind.Gem:
-                        _mGem[_nGem++] = M(g.pos, -0.05f, 45f, 0.5f);
+                        _pool.Draw(_sprGem, g.pos, -0.05f, GemTint, 0.5f, 45f);
                         break;
                     case PickupKind.Gold:
-                        _mGold[_nGold++] = M(g.pos, -0.05f, 0f, 0.55f);
+                        _pool.Draw(_sprGold, g.pos, -0.05f, GoldTint, 0.55f);
                         break;
                     case PickupKind.Chest:
-                        if (_nChest < _mChest.Length) _mChest[_nChest++] = M(g.pos, -0.05f, 0f, 0.95f);
+                        _pool.Draw(_sprChest, g.pos, -0.05f, ChestTint, 0.95f, 45f);
                         break;
                 }
             }
-            NeonMesh.RenderInstanced(_matGem, _quad, _mGem, _nGem);
-            NeonMesh.RenderInstanced(_matGold, _quad, _mGold, _nGold);
-            NeonMesh.RenderInstanced(_matChest, _quad, _mChest, _nChest);
+            _pool.End();
         }
-
-        static Matrix4x4 M(Vector2 pos, float z, float rotZ, float scale)
-            => Matrix4x4.TRS(new Vector3(pos.x, pos.y, z), Quaternion.Euler(0, 0, rotZ), new Vector3(scale, scale, 1f));
     }
 }
