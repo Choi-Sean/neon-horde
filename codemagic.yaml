@@ -1,28 +1,67 @@
 # NEON HORDE — Codemagic CI (Mac 없이 iOS/Android 클라우드 빌드)
+# Unity 6000.0 LTS (6000.0.82f1). Codemagic 맥 머신에 해당 버전이 없으면 빌드 스텝에서 설치한다.
 #
-# 처음 한 번 준비할 것 (Codemagic 웹 UI):
-#   1) 이 리포를 Codemagic 앱에 연결
-#   2) Environment variable groups 생성:
-#        - "unity"            : UNITY_SERIAL, UNITY_EMAIL, UNITY_PASSWORD   (Unity Plus/Pro 권장. Personal은 아래 주석 참고)
-#        - "android_keystore" : CM_KEYSTORE(base64), CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_ALIAS_PASSWORD
-#        - "google_play"      : GCLOUD_SERVICE_ACCOUNT_CREDENTIALS  (Play Console 서비스 계정 JSON)
-#   3) Integrations → App Store Connect API key 등록 → 이름을 "NeonHorde ASC" 로
-#   4) Code signing → iOS: distribution certificate/profile은 ASC API 키로 Codemagic이 자동 생성
-#
-# Unity Personal 라이선스로 CI 하려면: serial 활성화가 안 되므로 .ulf 수동 활성화가 필요.
-#   https://docs.codemagic.io/knowledge-others/manual-unity-license-activation/  (UNITY_LICENSE 변수에 .ulf 내용)
-#   그게 번거로우면 Unity Plus 개인 라이선스가 CI에 가장 매끄럽다.
+# 처음 한 번 준비 (Codemagic 웹 UI):
+#   Teams → Integrations
+#     - App Store Connect: API 키를 "NeonHorde ASC" 이름으로 등록 (Issuer ID + Key ID + .p8)
+#   앱 → Environment variables (그룹으로 묶기):
+#     - group "unity":
+#         Unity Pro/Plus  -> UNITY_SERIAL, UNITY_EMAIL, UNITY_PASSWORD
+#         Unity Personal  -> UNITY_LICENSE (.ulf 파일 전체 내용을 값으로)  ※ 아래 문서 참고
+#         https://docs.codemagic.io/knowledge-others/manual-unity-license-activation/
+#     - group "android_keystore":
+#         CM_KEYSTORE (base64), CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_ALIAS_PASSWORD
+#     - group "google_play":
+#         GCLOUD_SERVICE_ACCOUNT_CREDENTIALS (Play Console 서비스 계정 JSON)
+#   앱 → Code signing → Android: keystore 업로드 후 reference 이름 "neonhorde_keystore"
 
 definitions:
-  unity_bin: &unity_bin
-    UNITY_BIN: "${UNITY_HOME}/Contents/MacOS/Unity"
+  unity_version: &unity_version "6000.0.82f1"
+  unity_changeset: &unity_changeset "2fb0dae735e1"
+
+  install_unity: &install_unity
+    name: Ensure Unity is installed
+    script: |
+      set -e
+      UNITY_VERSION="6000.0.82f1"
+      UNITY_CHANGESET="2fb0dae735e1"
+      UNITY_APP="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app"
+      HUB="/Applications/Unity Hub.app/Contents/MacOS/Unity Hub"
+      if [ ! -d "$UNITY_APP" ]; then
+        echo "Installing Unity ${UNITY_VERSION}..."
+        "$HUB" -- --headless install \
+          --version "$UNITY_VERSION" --changeset "$UNITY_CHANGESET" \
+          --module ios android --childModules || true
+      fi
+      test -x "${UNITY_APP}/Contents/MacOS/Unity" || { echo "Unity install failed"; exit 1; }
+      echo "UNITY_HOME=${UNITY_APP}" >> "$CM_ENV"
+      echo "UNITY_BIN=${UNITY_APP}/Contents/MacOS/Unity" >> "$CM_ENV"
+
+  activate_license: &activate_license
+    name: Activate Unity license
+    script: |
+      if [ -n "$UNITY_SERIAL" ]; then
+        "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
+          -serial "$UNITY_SERIAL" -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" || true
+      elif [ -n "$UNITY_LICENSE" ]; then
+        printf '%s' "$UNITY_LICENSE" > "$CM_BUILD_DIR/unity.ulf"
+        "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
+          -manualLicenseFile "$CM_BUILD_DIR/unity.ulf" || true
+      else
+        echo "!! No Unity license env var (UNITY_SERIAL or UNITY_LICENSE). Build will likely fail."
+      fi
+
+  return_license: &return_license
+    name: Return Unity license
+    script: |
+      "$UNITY_BIN" -batchmode -nographics -quit -returnlicense -logFile - || true
 
 workflows:
 
   # ------------------------------------------------------------------ Android
   android:
     name: NEON HORDE · Android (AAB)
-    max_build_duration: 90
+    max_build_duration: 120
     instance_type: mac_mini_m2
     environment:
       groups:
@@ -30,15 +69,16 @@ workflows:
         - android_keystore
         - google_play
       vars:
-        <<: *unity_bin
         PACKAGE_NAME: "com.bitbyte.neonhorde"
       android_signing:
-        - neonhorde_keystore   # Codemagic UI에서 keystore 업로드 후 이 reference 이름 사용
+        - neonhorde_keystore
+    cache:
+      cache_paths:
+        - $HOME/Library/Unity/cache
+        - $CM_BUILD_DIR/Library
     scripts:
-      - name: Activate Unity license
-        script: |
-          "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
-            -serial "${UNITY_SERIAL}" -username "${UNITY_EMAIL}" -password "${UNITY_PASSWORD}" || true
+      - *install_unity
+      - *activate_license
       - name: Build Android App Bundle
         script: |
           export APP_VERSION_NAME="1.0.$PROJECT_BUILD_NUMBER"
@@ -46,9 +86,7 @@ workflows:
           "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
             -projectPath . \
             -executeMethod NeonHorde.EditorTools.BuildScript.BuildAndroid
-      - name: Return Unity license
-        script: |
-          "$UNITY_BIN" -batchmode -nographics -quit -returnlicense -logFile - || true
+      - *return_license
     artifacts:
       - build/android/*.aab
       - build/android/*.apk
@@ -65,23 +103,24 @@ workflows:
   # ------------------------------------------------------------------ iOS
   ios:
     name: NEON HORDE · iOS (TestFlight)
-    max_build_duration: 120
+    max_build_duration: 150
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: NeonHorde ASC   # <- Codemagic Team → Integrations 에 이 이름으로 API 키 등록
+      app_store_connect: NeonHorde ASC
     environment:
       groups:
         - unity
       vars:
-        <<: *unity_bin
         BUNDLE_ID: "com.bitbyte.neonhorde"
         XCODE_PROJECT: "build/ios/Unity-iPhone.xcodeproj"
         XCODE_SCHEME: "Unity-iPhone"
+    cache:
+      cache_paths:
+        - $HOME/Library/Unity/cache
+        - $CM_BUILD_DIR/Library
     scripts:
-      - name: Activate Unity license
-        script: |
-          "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
-            -serial "${UNITY_SERIAL}" -username "${UNITY_EMAIL}" -password "${UNITY_PASSWORD}" || true
+      - *install_unity
+      - *activate_license
       - name: Build Unity iOS Xcode project
         script: |
           export APP_VERSION_NAME="1.0.$PROJECT_BUILD_NUMBER"
@@ -89,16 +128,12 @@ workflows:
           "$UNITY_BIN" -batchmode -nographics -quit -logFile - \
             -projectPath . \
             -executeMethod NeonHorde.EditorTools.BuildScript.BuildIOS
-      - name: Return Unity license
-        script: |
-          "$UNITY_BIN" -batchmode -nographics -quit -returnlicense -logFile - || true
+      - *return_license
       - name: Install CocoaPods
         script: |
           cd build/ios && pod install || true
-      - name: Create signing files (cert + provisioning profile) via App Store Connect API
+      - name: Create signing files via App Store Connect API
         script: |
-          # registers the Bundle ID if missing, creates a distribution cert + App Store profile,
-          # then imports them so xcodebuild can sign. Needs the "NeonHorde ASC" integration.
           app-store-connect create-bundle-id "$BUNDLE_ID" --name "NEON HORDE" || true
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
