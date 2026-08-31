@@ -42,6 +42,15 @@ namespace NeonHorde
         static readonly Color EliteTint = new Color(2.6f, 2.1f, 0.7f, 1f);
         static readonly Color BossTint = new Color(2.8f, 0.35f, 1.8f, 1f);
 
+        // "face mode": if Resources/art/enemy_face exists, every enemy is that face on a
+        // coloured glow disc (kind still readable by colour + size).
+        bool _faceMode;
+        Sprite _faceSprite, _glowSprite;
+
+        static readonly string[] ShoutSpawn = { "WAAAGH!", "WRONG!", "NOT FAIR!", "SAD!", "BELIEVE ME!" };
+        static readonly string[] ShoutHit = { "OW!", "OUCH!", "AARGH!", "NO!", "RIGGED!" };
+        static readonly Color ShoutColor = new Color(2.6f, 2.2f, 0.5f, 1f);
+
         PlayerController _player;
         RunManager _run;
         PickupManager _pickups;
@@ -68,6 +77,12 @@ namespace NeonHorde
             _spriteElite = NeonArt.Sprite(NeonShapeKind.Star, 160, 0.55f, 0.45f);
             _spriteBoss = NeonArt.Sprite(NeonShapeKind.Star, 192, 0.6f, 0.5f);
             _pool = new SpritePool("EnemySprites", 6, transform);
+
+            // Joke build: every enemy wears a face. Real PNG if dropped in
+            // Resources/art/enemy_face.png, otherwise the built-in cartoon face.
+            _faceSprite = SpriteBank.Get("enemy_face") ?? FaceArt.AngryFace();
+            _faceMode = _faceSprite != null;
+            if (_faceMode) _glowSprite = NeonArt.GlowSprite(96, 1.7f);
         }
 
         static NeonShapeKind ShapeFor(EnemyId id) => id switch
@@ -124,6 +139,10 @@ namespace NeonHorde
                 if (_run != null) _run.RaiseBossSpawn();
                 if (NeonVfx.Instance != null) NeonVfx.Instance.Ring(pos, new Color(2.6f, 0.4f, 1.6f, 1f), 4f, 0.7f);
             }
+
+            if (_dmgNumbers != null && (boss || Random.value < 0.5f))
+                _dmgNumbers.Shout(pos, boss ? "WAAAGH!!!" : ShoutSpawn[Random.Range(0, ShoutSpawn.Length)],
+                    ShoutColor, boss ? 64 : 40, 0.9f);
         }
 
         void RemoveAt(int i)
@@ -319,7 +338,12 @@ namespace NeonHorde
             if (_dmgNumbers != null) _dmgNumbers.Report(e.pos, dmg);
             if (NeonVfx.Instance != null && Random.value < 0.35f)
                 NeonVfx.Instance.Spark(e.pos, EnemyCatalog.Get((EnemyId)e.id).color, 0.5f);
-            if (e.hp > 0f) return false;
+            if (e.hp > 0f)
+            {
+                if (_dmgNumbers != null && Random.value < 0.3f)
+                    _dmgNumbers.Shout(e.pos, ShoutHit[Random.Range(0, ShoutHit.Length)], ShoutColor, 36, 0.6f);
+                return false;
+            }
 
             EnemyDef def = EnemyCatalog.Get((EnemyId)e.id);
             bool elite = (e.flags & (byte)EFlag.Elite) != 0;
@@ -371,11 +395,20 @@ namespace NeonHorde
                 ref E e = ref _e[i];
                 bool boss = (e.flags & (byte)EFlag.Boss) != 0;
                 bool elite = !boss && (e.flags & (byte)EFlag.Elite) != 0;
+                Color kindCol = boss ? BossTint : elite ? EliteTint : _colorByKind[e.id];
+
+                if (_faceMode)
+                {
+                    // coloured glow disc behind (kind read) + the face on top
+                    _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, e.radius * 3.6f);
+                    Color face = e.hitFlash > 0f ? new Color(2.2f, 0.6f, 0.6f, 1f) : Color.white;
+                    _pool.Draw(_faceSprite, e.pos, -0.1f, face, e.radius * 2.6f);
+                    continue;
+                }
 
                 Sprite sprite = boss ? _spriteBoss : elite ? _spriteElite : _spriteByKind[e.id];
-                Color col = boss ? BossTint : elite ? EliteTint : _colorByKind[e.id];
+                Color col = kindCol;
                 if (e.hitFlash > 0f) col = Color.Lerp(col, Color.white * 2.2f, 0.7f);
-
                 _pool.Draw(sprite, e.pos, 0f, col, e.radius * 2.8f);
             }
             _pool.End();

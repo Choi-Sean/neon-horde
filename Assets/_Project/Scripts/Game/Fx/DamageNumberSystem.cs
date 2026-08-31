@@ -10,11 +10,14 @@ namespace NeonHorde
     {
         const int PoolSize = 80;
         const int MaxSpawnsPerFrame = 6;
+        const int ShoutPoolSize = 28;
 
         struct N { public Transform tr; public TextMesh tm; public float t; public float life; public Vector3 vel; public bool active; }
 
         N[] _pool;
+        N[] _shouts;
         int _spawnsThisFrame;
+        int _shoutsThisFrame;
         public bool Enabled = true;
 
         void Start() => Enabled = GameConfig.DamageNumbers;
@@ -22,30 +25,44 @@ namespace NeonHorde
         void Awake()
         {
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            _pool = new N[PoolSize];
-            for (int i = 0; i < PoolSize; i++)
+            _pool = MakePool("dmg", PoolSize, font, 48);
+            _shouts = MakePool("shout", ShoutPoolSize, font, 40);
+        }
+
+        N[] MakePool(string name, int size, Font font, int fontSize)
+        {
+            var arr = new N[size];
+            for (int i = 0; i < size; i++)
             {
-                var go = new GameObject("dmg");
+                var go = new GameObject(name);
                 go.transform.SetParent(transform, false);
                 var tm = go.AddComponent<TextMesh>();
                 tm.font = font;
                 if (font != null) go.GetComponent<MeshRenderer>().sharedMaterial = font.material;
-                tm.fontSize = 48;
+                tm.fontSize = fontSize;
                 tm.characterSize = 0.06f;
                 tm.anchor = TextAnchor.MiddleCenter;
                 tm.color = Color.white;
                 go.SetActive(false);
-                _pool[i] = new N { tr = go.transform, tm = tm };
+                arr[i] = new N { tr = go.transform, tm = tm };
             }
+            return arr;
         }
 
         void LateUpdate()
         {
             _spawnsThisFrame = 0;
+            _shoutsThisFrame = 0;
             float dt = Time.deltaTime;
-            for (int i = 0; i < _pool.Length; i++)
+            Tick(_pool, dt);
+            Tick(_shouts, dt);
+        }
+
+        static void Tick(N[] pool, float dt)
+        {
+            for (int i = 0; i < pool.Length; i++)
             {
-                ref N n = ref _pool[i];
+                ref N n = ref pool[i];
                 if (!n.active) continue;
                 n.t += dt;
                 n.tr.position += n.vel * dt;
@@ -53,6 +70,29 @@ namespace NeonHorde
                 float k = 1f - n.t / n.life;
                 var c = n.tm.color; c.a = Mathf.Clamp01(k); n.tm.color = c;
                 if (n.t >= n.life) { n.active = false; n.tr.gameObject.SetActive(false); }
+            }
+        }
+
+        /// <summary>A short spoken line above an enemy ("WAAAGH!", "OW!"). Independent of
+        /// the damage-number toggle; hard rate-capped so a horde can't flood it.</summary>
+        public void Shout(Vector3 worldPos, string text, Color color, int fontSize = 40, float life = 0.8f)
+        {
+            if (_shoutsThisFrame >= 3) return;
+            for (int i = 0; i < _shouts.Length; i++)
+            {
+                ref N n = ref _shouts[i];
+                if (n.active) continue;
+                n.active = true;
+                n.t = 0f;
+                n.life = life;
+                n.vel = new Vector3(Random.Range(-0.3f, 0.3f), 1.3f, 0f);
+                n.tr.position = worldPos + Vector3.up * 0.7f;
+                n.tr.gameObject.SetActive(true);
+                n.tm.text = text;
+                n.tm.color = color;
+                n.tm.fontSize = fontSize;
+                _shoutsThisFrame++;
+                return;
             }
         }
 

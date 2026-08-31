@@ -21,7 +21,8 @@ namespace NeonHorde
 
             var save = new JsonSaveService();
             Meta = save.Load();
-            Loc.Current = (Lang)Mathf.Clamp(Meta.settings.language, 0, 1);
+            Meta.settings.language = (int)Lang.En; // personal build: English
+            Loc.Current = Lang.En;
             ISaveService saveSvc = save;
             ServiceLocator.Register(saveSvc);
 
