@@ -426,10 +426,10 @@ namespace NeonHorde
                     float sizeJit = 0.92f + ((s >> 4) & 7) / 7f * 0.16f;   // 0.92..1.08
 
                     // "적당히": modest face scale, hard cap per tier
-                    float cap = boss ? 3.0f : isMid ? 2.2f : 1.3f;
-                    float sc = Mathf.Min(e.radius * 2.2f * sizeJit, cap);
+                    float cap = boss ? 1.8f : isMid ? 1.25f : 0.8f;
+                    float sc = Mathf.Min(e.radius * 1.35f * sizeJit, cap);
 
-                    _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, sc * 1.4f);
+                    _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, sc * 1.15f);
 
                     Sprite faceBase, faceHurt;
                     if (boss) { faceBase = _faceBoss; faceHurt = null; }
