@@ -39,32 +39,17 @@ namespace NeonHorde
             if (shader == null) shader = Shader.Find("Sprites/Default");
             var mat = new Material(shader) { name = "neon_grid_mat" };
 
-            // Optional real ground: drop Resources/art/ground.png (tileable, top-down).
-            var groundSprite = SpriteBank.Get("ground");
-            Texture tex;
-            float repeat;
-            if (groundSprite != null)
-            {
-                tex = groundSprite.texture;
-                tex.wrapMode = TextureWrapMode.Repeat;
-                repeat = coverageTiles / 8f; // each repeat ~8 world units
-            }
-            else
-            {
-                tex = BuildLawnTexture(); // "White House South Lawn" vibe for the joke build
-                repeat = coverageTiles / 3f;
-            }
-
+            var tex = BuildTexture();
             if (mat.HasProperty("_BaseMap"))
             {
                 mat.SetTexture("_BaseMap", tex);
-                mat.SetTextureScale("_BaseMap", new Vector2(repeat, repeat));
+                mat.SetTextureScale("_BaseMap", new Vector2(coverageTiles, coverageTiles));
                 mat.SetColor("_BaseColor", Color.white);
             }
             else
             {
                 mat.mainTexture = tex;
-                mat.mainTextureScale = new Vector2(repeat, repeat);
+                mat.mainTextureScale = new Vector2(coverageTiles, coverageTiles);
             }
             mr.sharedMaterial = mat;
             mr.sortingOrder = -1000;
@@ -72,32 +57,6 @@ namespace NeonHorde
             mr.receiveShadows = false;
 
             transform.position = new Vector3(0f, 0f, 1f);
-        }
-
-        // Grassy field: green base + soft mowing stripes + blade-ish speckle noise.
-        static Texture2D BuildLawnTexture()
-        {
-            const int c = 256;
-            var tex = new Texture2D(c, c, TextureFormat.RGBA32, false)
-            { wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear, name = "lawn_tex" };
-            var baseCol = new Color(0.22f, 0.46f, 0.18f, 1f);
-            var px = new Color[c * c];
-            for (int y = 0; y < c; y++)
-            for (int x = 0; x < c; x++)
-            {
-                float stripe = 1f + 0.10f * Mathf.Sin((y / (float)c) * Mathf.PI * 4f);
-                float coarse = Mathf.PerlinNoise(x * 0.06f, y * 0.06f) * 0.18f - 0.09f;
-                float blades = (Mathf.PerlinNoise(x * 0.9f, y * 0.9f) - 0.5f) * 0.14f;
-                var col = baseCol * stripe;
-                col.r = Mathf.Clamp01(col.r + coarse * 0.5f + blades * 0.4f);
-                col.g = Mathf.Clamp01(col.g + coarse + blades);
-                col.b = Mathf.Clamp01(col.b + coarse * 0.3f + blades * 0.2f);
-                col.a = 1f;
-                px[y * c + x] = col;
-            }
-            tex.SetPixels(px);
-            tex.Apply();
-            return tex;
         }
 
         static Texture2D BuildTexture()

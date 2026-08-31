@@ -35,6 +35,34 @@ namespace NeonHorde
             return s;
         }
 
+        // ---- capsule / stadium (limbs, torso for the stick figure) ----
+        // pivotY: 0 = bottom, 0.5 = centre, ~0.9 = top (limbs swing from the joint).
+        public static Sprite Capsule(int w = 24, int h = 96, float glow = 0.14f, float pivotY = 0.5f)
+        {
+            string key = $"cap:{w}:{h}:{glow:0.00}:{pivotY:0.00}";
+            if (SpriteCache.TryGetValue(key, out var s)) return s;
+            var t = new Texture2D(w, h, TextureFormat.RGBA32, false)
+            { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            float r = w * 0.5f;
+            var px = new Color32[w * h];
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                float cy = Mathf.Clamp(y + 0.5f, r, h - r);     // nearest point on the core segment
+                float d = Mathf.Sqrt(Sq(x + 0.5f - r) + Sq(y + 0.5f - cy)) - (r - 1f);
+                float fill = Mathf.Clamp01(0.5f - d);
+                float halo = Mathf.Pow(Mathf.Clamp01(1f - Mathf.Max(0f, d) / (r * (0.4f + glow))), 2.2f);
+                float a = Mathf.Max(fill, halo * 0.7f);
+                float bright = Mathf.Lerp(0.8f, 1f, fill);
+                px[y * w + x] = new Color32(255, 255, 255, (byte)(Mathf.Clamp01(a) * bright * 255));
+            }
+            t.SetPixels32(px); t.Apply();
+            s = UnityEngine.Sprite.Create(t, new Rect(0, 0, w, h), new Vector2(0.5f, Mathf.Clamp01(pivotY)), h);
+            s.name = "neon_capsule";
+            SpriteCache[key] = s;
+            return s;
+        }
+
         // ---- radial glow only (halo, muzzle, explosion) ----
         public static Texture2D Glow(int size = 128, float exponent = 2.2f)
         {

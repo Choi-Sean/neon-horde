@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -82,54 +81,7 @@ namespace NeonHorde
             if (panel != null) panel.SetActive(true);
         }
 
-        Image _gag;
-
-        void EnsureGag()
-        {
-            if (_gag != null) return;
-            var sp = SpriteBank.Get("revive_gag");
-            if (sp == null) return;
-
-            var go = new GameObject("ReviveGag", typeof(RectTransform));
-            var rt = (RectTransform)go.transform;
-            rt.SetParent(transform, false);
-            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
-            var bg = go.AddComponent<Image>();
-            bg.color = new Color(0f, 0f, 0f, 0.97f);
-            bg.raycastTarget = true;
-
-            var imgGo = new GameObject("Img", typeof(RectTransform));
-            var irt = (RectTransform)imgGo.transform;
-            irt.SetParent(rt, false);
-            irt.anchorMin = Vector2.zero; irt.anchorMax = Vector2.one;
-            irt.offsetMin = new Vector2(30, 30); irt.offsetMax = new Vector2(-30, -30);
-            var img = imgGo.AddComponent<Image>();
-            img.sprite = sp;
-            img.preserveAspect = true;
-            img.raycastTarget = false;
-
-            _gag = bg;
-            _gag.gameObject.SetActive(false);
-        }
-
         void OnAdRevive()
-        {
-            EnsureGag();
-            if (_gag != null) { StartCoroutine(GagThenRevive()); return; }
-            DoAdRevive();
-        }
-
-        IEnumerator GagThenRevive()
-        {
-            _gag.transform.SetAsLastSibling();
-            _gag.gameObject.SetActive(true);
-            yield return new WaitForSecondsRealtime(2.2f);
-            _gag.gameObject.SetActive(false);
-            DoAdRevive();
-        }
-
-        void DoAdRevive()
         {
             if (!ServiceLocator.TryGet<IAdsService>(out var ads)) { RunManager.Instance.EndRun(false); return; }
             ads.ShowRewarded(AdPlacement.Revive, ok =>
