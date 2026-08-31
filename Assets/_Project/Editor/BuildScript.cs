@@ -58,6 +58,7 @@ namespace NeonHorde.EditorTools
         public static void BuildAndroidApk()
         {
             ApplyVersion();
+            ReimportArtFolder();
             EditorUserBuildSettings.buildAppBundle = false;
             // Lighter IL2CPP so the native (clang) compile doesn't OOM on a dev box.
             var android = UnityEditor.Build.NamedBuildTarget.Android;
@@ -136,6 +137,18 @@ namespace NeonHorde.EditorTools
             PlayerSettings.Android.keystorePass = string.Empty;
             PlayerSettings.Android.keyaliasName = string.Empty;
             PlayerSettings.Android.keyaliasPass = string.Empty;
+        }
+
+        // Force Resources/art/ through ArtImportSettings (Sprite mode) before a build,
+        // so files the user just dropped in load via SpriteBank without a manual reimport.
+        static void ReimportArtFolder()
+        {
+            const string dir = "Assets/_Project/Resources/art";
+            if (Directory.Exists(dir))
+            {
+                AssetDatabase.ImportAsset(dir, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+                Debug.Log("[Build] reimported " + dir);
+            }
         }
 
         static void ApplyVersion()
