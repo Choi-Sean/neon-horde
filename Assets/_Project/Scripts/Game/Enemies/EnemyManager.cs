@@ -43,11 +43,11 @@ namespace NeonHorde
         static readonly Color EliteTint = new Color(2.6f, 2.1f, 0.7f, 1f);
         static readonly Color BossTint = new Color(2.8f, 0.35f, 1.8f, 1f);
 
-        // "face mode": if Resources/art/enemy_face exists, every enemy is that face on a
-        // coloured glow disc (kind still readable by colour + size).
-        bool _faceMode;
-        Sprite _faceSprite, _faceHitSprite, _glowSprite;
-        Sprite _faceBigSprite, _faceBigHitSprite; // Tank / FrostTank / elite / boss
+        // Face art: normal soldiers (mon1/mon2 …) on a coloured glow disc, plus a
+        // mid-boss face (Tank/FrostTank/elite) and a boss face. Kind still readable by
+        // glow colour + size.
+        Sprite[] _faceNormals, _faceNormalsHurt;
+        Sprite _faceMid, _faceBoss, _glowSprite;
         static readonly Color HurtTint = new Color(2.2f, 0.6f, 0.6f, 1f);
 
         static readonly string[] ShoutSpawn = { "WAAAGH!", "WRONG!", "NOT FAIR!", "SAD!", "BELIEVE ME!" };
@@ -83,14 +83,21 @@ namespace NeonHorde
 
             // Joke build: every enemy wears a face. Real PNG if dropped in
             // Resources/art/enemy_face.png, otherwise the built-in cartoon face.
-            _faceSprite = SpriteBank.Get("enemy_face") ?? FaceArt.AngryFace();
-            // hand-made hit frame if supplied, else derive a "hurt" face from the base
-            _faceHitSprite = SpriteBank.Get("enemy_face_hit") ?? FaceArt.DeriveHurt(_faceSprite);
-            // big enemies (Tank / FrostTank / elite / boss) get their own face if provided
-            _faceBigSprite = SpriteBank.Get("enemy_face_big") ?? _faceSprite;
-            _faceBigHitSprite = SpriteBank.Get("enemy_face_big_hit"); // optional; else tint+shake
-            _faceMode = _faceSprite != null;
-            if (_faceMode) _glowSprite = NeonArt.GlowSprite(96, 1.7f);
+            var norm = new List<Sprite>();
+            foreach (var k in new[] { "mon1", "mon2", "mon3", "enemy_face", "enemy_face_2" })
+            {
+                var sp = SpriteBank.Get(k);
+                if (sp != null) norm.Add(sp);
+            }
+            if (norm.Count == 0) norm.Add(FaceArt.AngryFace());
+            _faceNormals = norm.ToArray();
+            _faceNormalsHurt = new Sprite[_faceNormals.Length];
+            for (int i = 0; i < _faceNormals.Length; i++)
+                _faceNormalsHurt[i] = FaceArt.DeriveHurt(_faceNormals[i]);
+
+            _faceMid = SpriteBank.Get("mid-boss") ?? SpriteBank.Get("enemy_face_big") ?? _faceNormals[0];
+            _faceBoss = SpriteBank.Get("boss") ?? _faceMid;
+            _glowSprite = NeonArt.GlowSprite(96, 1.7f);
         }
 
         static NeonShapeKind ShapeFor(EnemyId id) => id switch
@@ -406,29 +413,39 @@ namespace NeonHorde
                 bool elite = !boss && (e.flags & (byte)EFlag.Elite) != 0;
                 Color kindCol = boss ? BossTint : elite ? EliteTint : _colorByKind[e.id];
 
-                if (_faceMode)
+                if (_faceNormals != null)
                 {
-                    // coloured glow disc behind (kind read) + the face on top
-                    _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, e.radius * 3.6f);
-
                     bool hit = e.hitFlash > 0f;
-                    bool big = boss || elite
-                               || e.id == (byte)EnemyId.Tank || e.id == (byte)EnemyId.FrostTank;
+                    bool isMid = !boss && (elite
+                                 || e.id == (byte)EnemyId.Tank || e.id == (byte)EnemyId.FrostTank);
 
                     // per-enemy jitter so a horde isn't identical clones
                     int s = e.seed;
                     float flip = (s & 1) == 0 ? 1f : -1f;
-                    float baseRot = ((s >> 1) % 15) - 7f;                 // -7..+7 deg
-                    float sizeJit = 0.9f + ((s >> 4) & 7) / 7f * 0.22f;   // 0.90..1.12
-                    float sc = e.radius * 2.6f * sizeJit;
+                    float baseRot = ((s >> 1) % 15) - 7f;                  // -7..+7 deg
+                    float sizeJit = 0.92f + ((s >> 4) & 7) / 7f * 0.16f;   // 0.92..1.08
 
-                    Sprite baseF = big ? _faceBigSprite : _faceSprite;
-                    Sprite hurtF = big ? _faceBigHitSprite : _faceHitSprite;
-                    Sprite fs = hit && hurtF != null ? hurtF : baseF;
-                    Color col = hit && hurtF == null ? HurtTint : Color.white;
-                    float rot = baseRot + (hit ? 16f * Mathf.Sin(Time.time * 80f + s) : 0f);
-                    float scHit = hit ? sc * 1.12f : sc;                  // pop on hit
-                    _pool.Draw(fs, e.pos, -0.1f, col, new Vector2(flip * scHit, scHit), rot);
+                    // "적당히": modest face scale, hard cap per tier
+                    float cap = boss ? 3.0f : isMid ? 2.2f : 1.3f;
+                    float sc = Mathf.Min(e.radius * 2.2f * sizeJit, cap);
+
+                    _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, sc * 1.4f);
+
+                    Sprite faceBase, faceHurt;
+                    if (boss) { faceBase = _faceBoss; faceHurt = null; }
+                    else if (isMid) { faceBase = _faceMid; faceHurt = null; }
+                    else
+                    {
+                        int vi = s % _faceNormals.Length;
+                        faceBase = _faceNormals[vi];
+                        faceHurt = _faceNormalsHurt[vi];
+                    }
+
+                    Sprite fs = hit && faceHurt != null ? faceHurt : faceBase;
+                    Color col = hit && faceHurt == null ? HurtTint : Color.white;
+                    float rot = baseRot + (hit ? 14f * Mathf.Sin(Time.time * 80f + s) : 0f);
+                    float scShown = hit ? sc * 1.1f : sc;
+                    _pool.Draw(fs, e.pos, -0.1f, col, new Vector2(flip * scShown, scShown), rot);
                     continue;
                 }
 

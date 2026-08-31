@@ -139,16 +139,36 @@ namespace NeonHorde.EditorTools
             PlayerSettings.Android.keyaliasPass = string.Empty;
         }
 
-        // Force Resources/art/ through ArtImportSettings (Sprite mode) before a build,
-        // so files the user just dropped in load via SpriteBank without a manual reimport.
+        // Mirror Assets/_Project/Art/ (the user's drop folder, left untouched) into
+        // Resources/art/ so SpriteBank can load them, then force a reimport through
+        // ArtImportSettings (Sprite mode). Extensions Unity can't import (.jfif) are
+        // copied with a .jpg name.
         static void ReimportArtFolder()
         {
-            const string dir = "Assets/_Project/Resources/art";
-            if (Directory.Exists(dir))
+            const string src = "Assets/_Project/Art";
+            const string dst = "Assets/_Project/Resources/art";
+            Directory.CreateDirectory(dst);
+
+            if (Directory.Exists(src))
             {
-                AssetDatabase.ImportAsset(dir, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
-                Debug.Log("[Build] reimported " + dir);
+                foreach (var f in Directory.GetFiles(src))
+                {
+                    string ext = Path.GetExtension(f).ToLowerInvariant();
+                    if (ext == ".meta") continue;
+                    string name = Path.GetFileNameWithoutExtension(f);
+                    if (ext == ".jfif") ext = ".jpg";
+                    if (ext != ".png" && ext != ".jpg" && ext != ".jpeg") continue;
+                    string target = Path.Combine(dst, name + ext);
+                    if (!File.Exists(target) || File.GetLastWriteTimeUtc(f) > File.GetLastWriteTimeUtc(target))
+                    {
+                        File.Copy(f, target, true);
+                        Debug.Log($"[Build] art sync {name}{ext}");
+                    }
+                }
             }
+
+            AssetDatabase.ImportAsset(dst, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+            Debug.Log("[Build] reimported " + dst);
         }
 
         static void ApplyVersion()
