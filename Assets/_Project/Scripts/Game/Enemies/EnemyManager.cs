@@ -442,10 +442,10 @@ namespace NeonHorde
                     }
 
                     Sprite fs = hit && faceHurt != null ? faceHurt : faceBase;
-                    Color col = hit && faceHurt == null ? HurtTint : Color.white;
+                    Color faceCol = hit && faceHurt == null ? HurtTint : Color.white;
                     float rot = baseRot + (hit ? 14f * Mathf.Sin(Time.time * 80f + s) : 0f);
                     float scShown = hit ? sc * 1.1f : sc;
-                    _pool.Draw(fs, e.pos, -0.1f, col, new Vector2(flip * scShown, scShown), rot);
+                    _pool.Draw(fs, e.pos, -0.1f, faceCol, new Vector2(flip * scShown, scShown), rot);
                     continue;
                 }
 
