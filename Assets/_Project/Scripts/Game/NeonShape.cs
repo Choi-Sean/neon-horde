@@ -23,8 +23,20 @@ namespace NeonHorde
         SpriteRenderer _head, _torso, _armL, _armR, _legL, _legR, _glow;
         Vector3 _lastPos;
         float _cycle, _speedSmooth, _facing = 1f;
+        Vector2? _aim;
 
-        void OnEnable() => Build();
+        /// <summary>World point the player is aiming at (nearest enemy). Null = not aiming.</summary>
+        public void SetAim(Vector2? worldTarget) => _aim = worldTarget;
+        public float Scale => size;
+        public Vector3 ShoulderWorld =>
+            transform.position + new Vector3(_facing * 0.13f * size, 0.5f * size, -0.05f);
+
+        void OnEnable()
+        {
+            Build();
+            if (Application.isPlaying && GetComponent<PlayerWeaponRig>() == null)
+                gameObject.AddComponent<PlayerWeaponRig>();
+        }
         void OnValidate() { if (isActiveAndEnabled) Build(); }
 
         void Build()
@@ -122,33 +134,48 @@ namespace NeonHorde
             _speedSmooth = Mathf.Lerp(_speedSmooth, spd, 1f - Mathf.Exp(-10f * dt));
             bool moving = _speedSmooth > 0.4f;
 
-            if (Mathf.Abs(vel.x) > 0.15f) _facing = Mathf.Sign(vel.x);
-            _rig.localScale = new Vector3(_facing * 1f, 1f, 1f);
+            // face the aim if aiming, else the travel direction
+            float dirX = _aim.HasValue ? (_aim.Value.x - transform.position.x) : vel.x;
+            if (Mathf.Abs(dirX) > 0.12f) _facing = Mathf.Sign(dirX);
+            _rig.localScale = new Vector3(_facing, 1f, 1f);
 
             float t = Time.time;
+            bool aiming = _aim.HasValue;
+
+            // legs: walk cycle when moving, planted otherwise
             if (moving)
             {
                 _cycle += dt * (7f + _speedSmooth * 1.6f);
                 float sw = Mathf.Sin(_cycle);
-                float swv = Mathf.Sin(_cycle * 2f);
-
                 _legL.transform.localRotation = Quaternion.Euler(0, 0, sw * 40f);
                 _legR.transform.localRotation = Quaternion.Euler(0, 0, -sw * 40f);
-                _armL.transform.localRotation = Quaternion.Euler(0, 0, 14f - sw * 34f);
-                _armR.transform.localRotation = Quaternion.Euler(0, 0, -14f + sw * 34f);
-
-                _bob.localPosition = new Vector3(0f, Mathf.Abs(swv) * 0.06f * size, 0f);
+                _bob.localPosition = new Vector3(0f, Mathf.Abs(Mathf.Sin(_cycle * 2f)) * 0.06f * size, 0f);
                 _rig.localRotation = Quaternion.Euler(0, 0, -_facing * 9f);
             }
             else
             {
-                float breathe = Mathf.Sin(t * 2.2f);
                 _legL.transform.localRotation = Quaternion.Euler(0, 0, 7f);
                 _legR.transform.localRotation = Quaternion.Euler(0, 0, -7f);
+                _bob.localPosition = new Vector3(0f, Mathf.Sin(t * 2.2f) * 0.015f * size, 0f);
+                _rig.localRotation = Quaternion.Lerp(_rig.localRotation, Quaternion.identity, 6f * dt);
+            }
+
+            // arms: present the weapon forward when aiming, otherwise swing / rest
+            if (aiming)
+            {
+                _armR.transform.localRotation = Quaternion.Euler(0, 0, -70f);
+                _armL.transform.localRotation = Quaternion.Euler(0, 0, -46f);
+            }
+            else if (moving)
+            {
+                float sw = Mathf.Sin(_cycle);
+                _armL.transform.localRotation = Quaternion.Euler(0, 0, 14f - sw * 34f);
+                _armR.transform.localRotation = Quaternion.Euler(0, 0, -14f + sw * 34f);
+            }
+            else
+            {
                 _armL.transform.localRotation = Quaternion.Euler(0, 0, 16f);
                 _armR.transform.localRotation = Quaternion.Euler(0, 0, -16f);
-                _bob.localPosition = new Vector3(0f, breathe * 0.015f * size, 0f);
-                _rig.localRotation = Quaternion.Lerp(_rig.localRotation, Quaternion.identity, 6f * dt);
             }
 
             if (_glow != null)

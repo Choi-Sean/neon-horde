@@ -205,6 +205,7 @@ namespace NeonHorde.EditorTools
             shape.color = Palette.Player;
             shape.size = 0.7f;
             shape.sortingOrder = 10;
+            playerGo.AddComponent<PlayerWeaponRig>();
 
             follow.target = playerGo.transform;
 
