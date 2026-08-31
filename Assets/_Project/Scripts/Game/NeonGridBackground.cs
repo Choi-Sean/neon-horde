@@ -74,23 +74,24 @@ namespace NeonHorde
             transform.position = new Vector3(0f, 0f, 1f);
         }
 
-        // Mown-lawn texture: green base + alternating lighter/darker mowing stripes + noise.
+        // Grassy field: green base + soft mowing stripes + blade-ish speckle noise.
         static Texture2D BuildLawnTexture()
         {
-            const int c = 128;
+            const int c = 256;
             var tex = new Texture2D(c, c, TextureFormat.RGBA32, false)
             { wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear, name = "lawn_tex" };
-            var baseCol = new Color(0.10f, 0.30f, 0.12f, 1f);
+            var baseCol = new Color(0.22f, 0.46f, 0.18f, 1f);
             var px = new Color[c * c];
             for (int y = 0; y < c; y++)
             for (int x = 0; x < c; x++)
             {
-                float stripe = (((x / 16) + (y / 64)) % 2 == 0) ? 1.06f : 0.92f;
-                float n = Mathf.PerlinNoise(x * 0.25f, y * 0.25f) * 0.12f - 0.06f;
+                float stripe = 1f + 0.10f * Mathf.Sin((y / (float)c) * Mathf.PI * 4f);
+                float coarse = Mathf.PerlinNoise(x * 0.06f, y * 0.06f) * 0.18f - 0.09f;
+                float blades = (Mathf.PerlinNoise(x * 0.9f, y * 0.9f) - 0.5f) * 0.14f;
                 var col = baseCol * stripe;
-                col.r = Mathf.Clamp01(col.r + n * 0.4f);
-                col.g = Mathf.Clamp01(col.g + n);
-                col.b = Mathf.Clamp01(col.b + n * 0.3f);
+                col.r = Mathf.Clamp01(col.r + coarse * 0.5f + blades * 0.4f);
+                col.g = Mathf.Clamp01(col.g + coarse + blades);
+                col.b = Mathf.Clamp01(col.b + coarse * 0.3f + blades * 0.2f);
                 col.a = 1f;
                 px[y * c + x] = col;
             }

@@ -27,6 +27,7 @@ namespace NeonHorde
             public float timer;      // ranged fire / exploder fuse / boss phase
             public float radius;
             public float hitFlash;
+            public byte seed;        // per-enemy visual jitter (face rot / flip / scale)
         }
 
         readonly E[] _e = new E[Capacity];
@@ -81,7 +82,8 @@ namespace NeonHorde
             // Joke build: every enemy wears a face. Real PNG if dropped in
             // Resources/art/enemy_face.png, otherwise the built-in cartoon face.
             _faceSprite = SpriteBank.Get("enemy_face") ?? FaceArt.AngryFace();
-            _faceHitSprite = SpriteBank.Get("enemy_face_hit"); // optional 2nd frame
+            // hand-made hit frame if supplied, else derive a "hurt" face from the base
+            _faceHitSprite = SpriteBank.Get("enemy_face_hit") ?? FaceArt.DeriveHurt(_faceSprite);
             _faceMode = _faceSprite != null;
             if (_faceMode) _glowSprite = NeonArt.GlowSprite(96, 1.7f);
         }
@@ -134,6 +136,7 @@ namespace NeonHorde
             e.timer = 0f;
             e.radius = radius;
             e.hitFlash = 0f;
+            e.seed = (byte)UnityEngine.Random.Range(0, 256);
             if (boss)
             {
                 BossActive = true;
@@ -402,11 +405,19 @@ namespace NeonHorde
                 {
                     // coloured glow disc behind (kind read) + the face on top
                     _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, e.radius * 3.6f);
+
                     bool hit = e.hitFlash > 0f;
-                    Sprite fs = hit && _faceHitSprite != null ? _faceHitSprite : _faceSprite;
-                    Color face = hit && _faceHitSprite == null ? new Color(2.2f, 0.6f, 0.6f, 1f) : Color.white;
-                    float wobble = hit ? 12f * Mathf.Sin(Time.time * 90f) : 0f;
-                    _pool.Draw(fs, e.pos, -0.1f, face, e.radius * 2.6f, wobble);
+                    // per-enemy jitter so a horde isn't identical clones
+                    int s = e.seed;
+                    float flip = (s & 1) == 0 ? 1f : -1f;
+                    float baseRot = ((s >> 1) % 15) - 7f;                 // -7..+7 deg
+                    float sizeJit = 0.9f + ((s >> 4) & 7) / 7f * 0.22f;   // 0.90..1.12
+                    float sc = e.radius * 2.6f * sizeJit;
+
+                    float rot = baseRot + (hit ? 16f * Mathf.Sin(Time.time * 80f + s) : 0f);
+                    Sprite fs = hit ? _faceHitSprite : _faceSprite;
+                    float scHit = hit ? sc * 1.12f : sc;                  // pop on hit
+                    _pool.Draw(fs, e.pos, -0.1f, Color.white, new Vector2(flip * scHit, scHit), rot);
                     continue;
                 }
 

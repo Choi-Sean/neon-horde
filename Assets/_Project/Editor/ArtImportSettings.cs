@@ -24,7 +24,14 @@ namespace NeonHorde.EditorTools
             ti.wrapMode = TextureWrapMode.Repeat;   // ground tiles need it; harmless for faces
             ti.filterMode = FilterMode.Bilinear;
             ti.maxTextureSize = 1024;
-            ti.textureCompression = TextureImporterCompression.Compressed;
+
+            // The enemy face is read back on the CPU at runtime to derive a "hurt" variant
+            // (FaceArt.DeriveHurt) — needs readable + uncompressed pixels.
+            bool isFace = p.IndexOf("enemy_face", StringComparison.OrdinalIgnoreCase) >= 0;
+            ti.isReadable = isFace;
+            ti.textureCompression = isFace
+                ? TextureImporterCompression.Uncompressed
+                : TextureImporterCompression.Compressed;
         }
     }
 }

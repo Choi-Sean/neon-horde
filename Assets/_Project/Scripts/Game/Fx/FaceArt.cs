@@ -84,5 +84,79 @@ namespace NeonHorde
             _cached.name = "angry_face";
             return _cached;
         }
+
+        static Sprite _hurtCache;
+
+        /// <summary>
+        /// A "hurt" variant of any face sprite, built once at load: radial pinch (scrunch)
+        /// + red wince tint + X eyes + gritted mouth. Works on the supplied photo or on
+        /// AngryFace(). Falls back to AngryFace() if the source texture isn't readable.
+        /// </summary>
+        public static Sprite DeriveHurt(Sprite src)
+        {
+            if (_hurtCache != null) return _hurtCache;
+            if (src == null) return AngryFace();
+
+            var st = src.texture;
+            int w = Mathf.RoundToInt(src.rect.width);
+            int h = Mathf.RoundToInt(src.rect.height);
+            int ox = Mathf.RoundToInt(src.rect.x);
+            int oy = Mathf.RoundToInt(src.rect.y);
+            int tw = st.width;
+
+            Color32[] sp;
+            try { sp = st.GetPixels32(); }
+            catch { return AngryFace(); }
+
+            var outPx = new Color32[w * h];
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                float u = (x + 0.5f) / w, v = (y + 0.5f) / h;
+                float dx = u - 0.5f, dy = v - 0.5f;
+                float len = Mathf.Sqrt(dx * dx + dy * dy) * 2f;
+                float k = Mathf.Pow(Mathf.Clamp01(len), 1.35f);
+                float sxN = len > 1e-4f ? 0.5f + dx / len * k * 0.5f : 0.5f;
+                float syN = len > 1e-4f ? 0.5f + dy / len * k * 0.5f : 0.5f;
+                sxN = 0.5f + (sxN - 0.5f) * 0.88f; // extra horizontal squeeze
+
+                int sx = Mathf.Clamp(Mathf.RoundToInt(sxN * w - 0.5f), 0, w - 1);
+                int sy = Mathf.Clamp(Mathf.RoundToInt(syN * h - 0.5f), 0, h - 1);
+                Color32 p = sp[(oy + sy) * tw + (ox + sx)];
+
+                float r = Mathf.Min(255f, p.r * 1.18f);
+                float g = p.g * 0.62f;
+                float b = p.b * 0.55f;
+                r = Mathf.Lerp(r, 32f, 0.18f);
+                g = Mathf.Lerp(g, 20f, 0.18f);
+                b = Mathf.Lerp(b, 20f, 0.18f);
+                Color32 o = new Color32((byte)r, (byte)g, (byte)b, p.a);
+
+                // X eyes
+                for (int e = -1; e <= 1; e += 2)
+                {
+                    float ex = 0.5f + e * 0.19f, ey = 0.60f;
+                    float ax = u - ex, ay = v - ey;
+                    if (Mathf.Abs(ax) < 0.085f && Mathf.Abs(ay) < 0.085f &&
+                        (Mathf.Abs(ax - ay) < 0.022f || Mathf.Abs(ax + ay) < 0.022f) && p.a > 8)
+                        o = new Color32(15, 8, 8, p.a);
+                }
+                // gritted mouth
+                if (v > 0.24f && v < 0.33f && Mathf.Abs(u - 0.5f) < 0.19f && p.a > 8)
+                {
+                    bool tooth = ((int)(u * 42f)) % 2 == 0;
+                    o = tooth ? new Color32(225, 214, 200, p.a) : new Color32(45, 16, 16, p.a);
+                }
+                outPx[y * w + x] = o;
+            }
+
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false)
+            { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            tex.SetPixels32(outPx);
+            tex.Apply();
+            _hurtCache = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), src.pixelsPerUnit);
+            _hurtCache.name = "face_hurt";
+            return _hurtCache;
+        }
     }
 }
