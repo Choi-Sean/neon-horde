@@ -4,14 +4,19 @@ using UnityEngine.UI;
 namespace NeonHorde
 {
     /// <summary>
-    /// Animated menu background: a slowly scrolling neon grid + a few drifting glow
-    /// blobs. Builds its own full-screen canvas behind everything.
+    /// Menu background: a printed-poster / political-cartoon look — off-white paper with
+    /// a halftone dot screen, a bold red diagonal banner, and a slow paper drift. Builds
+    /// its own full-screen canvas behind everything. (Replaces the old neon grid.)
     /// </summary>
     public sealed class MenuBackdrop : MonoBehaviour
     {
-        RawImage _grid;
-        RectTransform[] _blobs;
+        RawImage _halftone;
+        RectTransform _banner;
         float _t;
+
+        static readonly Color Paper = new Color(0.93f, 0.90f, 0.83f, 1f);
+        static readonly Color Ink = new Color(0.09f, 0.09f, 0.10f, 1f);
+        static readonly Color Red = new Color(0.80f, 0.13f, 0.14f, 1f);
 
         void Start()
         {
@@ -24,77 +29,73 @@ namespace NeonHorde
             scaler.referenceResolution = new Vector2(1080, 1920);
             var root = (RectTransform)canvasGo.transform;
 
-            var bg = New("BG", root, out var bgImg);
+            var bg = New("Paper", root);
             Stretch(bg);
-            bgImg = bg.gameObject.AddComponent<Image>();
-            bgImg.color = new Color(0.015f, 0.02f, 0.04f, 1f);
+            var bgImg = bg.gameObject.AddComponent<Image>();
+            bgImg.color = Paper;
             bgImg.raycastTarget = false;
 
-            var gridGo = New("Grid", root, out _);
-            Stretch(gridGo);
-            _grid = gridGo.gameObject.AddComponent<RawImage>();
-            _grid.texture = GridTex();
-            _grid.color = new Color(1f, 1f, 1f, 0.5f);
-            _grid.uvRect = new Rect(0, 0, 12, 21);
-            _grid.raycastTarget = false;
+            // red diagonal banner across the upper third
+            _banner = New("Banner", root);
+            _banner.anchorMin = _banner.anchorMax = new Vector2(0.5f, 0.72f);
+            _banner.sizeDelta = new Vector2(2600, 300);
+            _banner.localRotation = Quaternion.Euler(0, 0, -12f);
+            var bnImg = _banner.gameObject.AddComponent<Image>();
+            bnImg.color = Red;
+            bnImg.raycastTarget = false;
 
-            _blobs = new RectTransform[3];
-            var cols = new[]
-            {
-                new Color(0.2f, 1.2f, 2.2f, 0.5f),
-                new Color(2.0f, 0.4f, 1.6f, 0.4f),
-                new Color(0.4f, 2.0f, 1.4f, 0.35f)
-            };
-            var glow = NeonArt.GlowSprite(128, 2f);
-            for (int i = 0; i < 3; i++)
-            {
-                var b = New("Blob" + i, root, out var img);
-                img = b.gameObject.AddComponent<Image>();
-                img.sprite = glow;
-                img.color = cols[i];
-                img.raycastTarget = false;
-                b.sizeDelta = new Vector2(900 + i * 200, 900 + i * 200);
-                _blobs[i] = b;
-            }
+            // halftone dot screen over everything (subtle)
+            var ht = New("Halftone", root);
+            Stretch(ht);
+            _halftone = ht.gameObject.AddComponent<RawImage>();
+            _halftone.texture = HalftoneTex();
+            _halftone.color = new Color(Ink.r, Ink.g, Ink.b, 0.10f);
+            _halftone.uvRect = new Rect(0, 0, 26, 46);
+            _halftone.raycastTarget = false;
+
+            // a faint second ink wash bottom for weight
+            var vig = New("BottomWash", root);
+            vig.anchorMin = new Vector2(0, 0); vig.anchorMax = new Vector2(1, 0.28f);
+            vig.offsetMin = vig.offsetMax = Vector2.zero;
+            var vg = vig.gameObject.AddComponent<Image>();
+            vg.color = new Color(Ink.r, Ink.g, Ink.b, 0.06f);
+            vg.raycastTarget = false;
         }
 
         void Update()
         {
             _t += Time.deltaTime;
-            if (_grid != null)
+            if (_halftone != null)
             {
-                var r = _grid.uvRect;
-                r.x += Time.deltaTime * 0.06f;
-                r.y += Time.deltaTime * 0.03f;
-                _grid.uvRect = r;
+                var r = _halftone.uvRect;
+                r.x += Time.deltaTime * 0.015f;
+                r.y -= Time.deltaTime * 0.010f;
+                _halftone.uvRect = r;
             }
-            for (int i = 0; i < _blobs.Length; i++)
-            {
-                float ph = _t * (0.12f + i * 0.05f) + i * 2f;
-                _blobs[i].anchoredPosition = new Vector2(Mathf.Sin(ph) * 360f, Mathf.Cos(ph * 0.8f) * 620f);
-            }
+            if (_banner != null)
+                _banner.anchoredPosition = new Vector2(Mathf.Sin(_t * 0.25f) * 40f, Mathf.Sin(_t * 0.4f) * 12f);
         }
 
-        static Texture2D GridTex()
+        static Texture2D HalftoneTex()
         {
-            const int c = 64;
-            var t = new Texture2D(c, c, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear };
-            var line = new Color(0.15f, 0.5f, 0.9f, 1f);
+            const int c = 32;
+            var t = new Texture2D(c, c, TextureFormat.RGBA32, false)
+            { wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear };
             var px = new Color[c * c];
+            float r = c * 0.5f;
             for (int y = 0; y < c; y++)
             for (int x = 0; x < c; x++)
             {
-                float d = Mathf.Min(Mathf.Min(x, c - x), Mathf.Min(y, c - y));
-                float a = d < 1f ? 0.9f : Mathf.Exp(-d * 0.5f) * 0.4f;
-                px[y * c + x] = new Color(line.r, line.g, line.b, a);
+                float d = Mathf.Sqrt((x - r + 0.5f) * (x - r + 0.5f) + (y - r + 0.5f) * (y - r + 0.5f));
+                float a = d < c * 0.30f ? 1f : 0f;
+                px[y * c + x] = new Color(1f, 1f, 1f, a);
             }
             t.SetPixels(px); t.Apply();
             return t;
         }
 
-        static RectTransform New(string n, Transform p, out Image _)
+        static RectTransform New(string n, Transform p)
         {
-            _ = null;
             var go = new GameObject(n, typeof(RectTransform));
             var rt = (RectTransform)go.transform;
             rt.SetParent(p, false);

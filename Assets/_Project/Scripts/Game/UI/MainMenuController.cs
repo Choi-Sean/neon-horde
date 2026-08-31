@@ -79,18 +79,25 @@ namespace NeonHorde
             _logo.raycastTarget = false;
             var loaded = Resources.Load<Sprite>("branding/logo_mark");
             _logo.sprite = loaded != null ? loaded : NeonArt.Sprite(NeonShapeKind.Star, 256, 0.6f, 0.5f);
+            _logo.color = UiKit.Ink; // ink stamp, not a neon glow, on the paper backdrop
 
             UiKit.Title("NEON HORDE", _root, new Vector2(0.5f, 1f), new Vector2(0, -470), 92, UiKit.Accent);
 
+            var strap = UiKit.Text("Strap", _root,
+                "PAID FOR BY THE HORDE  ·  NOT AUTHORIZED BY ANY CANDIDATE", 22);
+            UiKit.Place(strap.rectTransform, new Vector2(0.5f, 1f), new Vector2(1000, 40), new Vector2(0, -560));
+            strap.color = UiKit.Ink;
+            strap.fontStyle = FontStyle.Italic;
+
             // currency chips
             _goldChip = UiKit.Chip("GoldChip", _root, "0", UiKit.Gold, NeonShapeKind.Disc);
-            UiKit.Place(_goldChip.rectTransform.parent as RectTransform, new Vector2(0.5f, 1f), new Vector2(280, 76), new Vector2(-150, -600));
+            UiKit.Place(_goldChip.rectTransform.parent as RectTransform, new Vector2(0.5f, 1f), new Vector2(280, 76), new Vector2(-150, -650));
             _coreChip = UiKit.Chip("CoreChip", _root, "0", UiKit.Core, NeonShapeKind.Diamond);
-            UiKit.Place(_coreChip.rectTransform.parent as RectTransform, new Vector2(0.5f, 1f), new Vector2(280, 76), new Vector2(150, -600));
+            UiKit.Place(_coreChip.rectTransform.parent as RectTransform, new Vector2(0.5f, 1f), new Vector2(280, 76), new Vector2(150, -650));
 
             _charLabel = UiKit.Text("Char", _root, "", 34);
             UiKit.Place(_charLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(1000, 48), new Vector2(0, 300));
-            _charLabel.color = new Color(0.7f, 0.9f, 1f, 1f);
+            _charLabel.color = UiKit.Ink;
 
             var play = UiKit.Button("Play", _root, Loc.T("play"), 62, out _, UiKit.Accent);
             UiKit.Place((RectTransform)play.transform, new Vector2(0.5f, 0.5f), new Vector2(780, 190), new Vector2(0, 150));
@@ -128,7 +135,7 @@ namespace NeonHorde
             brt.pivot = new Vector2(0.5f, 0f); brt.sizeDelta = new Vector2(1000, 140); brt.anchoredPosition = new Vector2(0, 100);
             _bannerLabel = UiKit.Text("txt", brt, "", 25, TextAnchor.MiddleLeft);
             UiKit.Place(_bannerLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(680, 120), new Vector2(-130, 0));
-            _bannerLabel.color = Color.white;
+            _bannerLabel.color = UiKit.Ink;
             var linkBtn = UiKit.Button("link", brt, "연결", 30, out _, new Color(0.2f, 1.4f, 1.9f, 1f));
             UiKit.Place((RectTransform)linkBtn.transform, new Vector2(1f, 0.5f), new Vector2(210, 100), new Vector2(-120, 0));
             linkBtn.onClick.AddListener(() => OpenAccount(false));
@@ -187,7 +194,7 @@ namespace NeonHorde
             var head = UiKit.Text("Head", card.transform, title, 54);
             UiKit.Place(head.rectTransform, new Vector2(0.5f, 1f), new Vector2(900, 90), new Vector2(0, -70));
 
-            var back = UiKit.Button("Back", card.transform, "닫기", 40, out _);
+            var back = UiKit.Button("Back", card.transform, Loc.T("close"), 40, out _);
             UiKit.Place((RectTransform)back.transform, new Vector2(0.5f, 0f), new Vector2(400, 110), new Vector2(0, 90));
             back.onClick.AddListener(() => { ClosePanel(); RefreshHome(); });
 

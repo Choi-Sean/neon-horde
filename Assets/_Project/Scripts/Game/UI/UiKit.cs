@@ -3,7 +3,9 @@ using UnityEngine.UI;
 
 namespace NeonHorde
 {
-    /// <summary>Runtime uGUI builders for the code-constructed menus (flat neon, no sprites).</summary>
+    /// <summary>Runtime uGUI builders for the code-constructed menus.
+    /// Style: printed political-poster / newsprint — cream paper, ink text, a red
+    /// accent, hard letterpress shadows. (Was neon.)</summary>
     public static class UiKit
     {
         static Font _font;
@@ -20,13 +22,14 @@ namespace NeonHorde
             }
         }
 
-        public static readonly Color Ink = Color.white;
-        public static readonly Color Panel = new Color(0.05f, 0.06f, 0.09f, 0.96f);
-        public static readonly Color Card = new Color(0.09f, 0.11f, 0.16f, 1f);
-        public static readonly Color Accent = new Color(0.2f, 1.4f, 1.9f, 1f);
-        public static readonly Color Gold = new Color(2.6f, 2.0f, 0.5f, 1f);
-        public static readonly Color Core = new Color(2.4f, 0.7f, 2.4f, 1f);
-        public static readonly Color Dim = new Color(0f, 0f, 0f, 0.7f);
+        public static readonly Color Ink    = new Color(0.10f, 0.10f, 0.11f, 1f);
+        public static readonly Color Paper  = new Color(0.93f, 0.90f, 0.83f, 1f);
+        public static readonly Color Panel  = new Color(0.92f, 0.89f, 0.81f, 0.98f);
+        public static readonly Color Card   = new Color(0.86f, 0.83f, 0.74f, 1f);
+        public static readonly Color Accent = new Color(0.80f, 0.13f, 0.14f, 1f); // agitprop red
+        public static readonly Color Gold   = new Color(0.72f, 0.55f, 0.15f, 1f); // flat mustard
+        public static readonly Color Core   = new Color(0.16f, 0.24f, 0.46f, 1f); // flat navy
+        public static readonly Color Dim    = new Color(0f, 0f, 0f, 0.7f);
 
         public static RectTransform Rect(string name, Transform parent)
         {
@@ -76,54 +79,67 @@ namespace NeonHorde
         }
 
         public static Button Button(string name, Transform parent, string label, int size, out Text labelText)
-            => Button(name, parent, label, size, out labelText, Accent);
+            => Button(name, parent, label, size, out labelText, Paper);
 
         public static Button Button(string name, Transform parent, string label, int size, out Text labelText, Color tint)
         {
             var rt = Rect(name, parent);
-            var img = rt.gameObject.AddComponent<Image>();
-            img.sprite = NeonArt.Panel(64, 20, 3f, 0.30f, 7f);
-            img.type = UnityEngine.UI.Image.Type.Sliced;
-            img.color = tint;
+            var border = rt.gameObject.AddComponent<Image>();  // outer ink box
+            border.color = Ink;
+
             var btn = rt.gameObject.AddComponent<Button>();
-            btn.targetGraphic = img;
             btn.transition = Selectable.Transition.ColorTint;
+
+            var fillRt = Rect("Fill", rt);
+            fillRt.anchorMin = Vector2.zero; fillRt.anchorMax = Vector2.one;
+            fillRt.offsetMin = new Vector2(5, 5); fillRt.offsetMax = new Vector2(-5, -5);
+            var fill = fillRt.gameObject.AddComponent<Image>();
+            fill.color = Color.Lerp(tint, Paper, 0.35f); // printed-stock, not neon
+            fill.raycastTarget = false;
+
+            btn.targetGraphic = fill;
             var cb = btn.colors;
-            cb.normalColor = tint;
-            cb.highlightedColor = tint * 1.5f;
-            cb.pressedColor = tint * 0.7f;
-            cb.selectedColor = tint;
-            cb.disabledColor = new Color(0.25f, 0.25f, 0.3f, 0.5f);
-            cb.fadeDuration = 0.08f;
+            cb.normalColor = Color.white;
+            cb.highlightedColor = new Color(1.06f, 1.06f, 1.06f, 1f);
+            cb.pressedColor = new Color(0.80f, 0.80f, 0.80f, 1f);
+            cb.selectedColor = Color.white;
+            cb.disabledColor = new Color(0.72f, 0.72f, 0.72f, 0.55f);
+            cb.fadeDuration = 0.06f;
             btn.colors = cb;
 
             labelText = Text("Label", rt, label, size);
             Stretch((RectTransform)labelText.transform);
-            labelText.color = Color.white;
+            labelText.color = Ink;
+            labelText.fontStyle = FontStyle.Bold;
             var sh = labelText.gameObject.AddComponent<UnityEngine.UI.Shadow>();
-            sh.effectColor = new Color(0f, 0f, 0f, 0.6f);
-            sh.effectDistance = new Vector2(0, -2);
+            sh.effectColor = new Color(1f, 1f, 1f, 0.5f); // paper-white letterpress
+            sh.effectDistance = new Vector2(1, -2);
             return btn;
         }
 
-        /// <summary>A small pill "chip" (icon + text), e.g. a currency readout.</summary>
+        /// <summary>A stamped tag: icon + text on flat stock with an ink edge.</summary>
         public static Text Chip(string name, Transform parent, string text, Color tint, NeonShapeKind glyph)
         {
             var rt = Rect(name, parent);
-            var bg = rt.gameObject.AddComponent<Image>();
-            bg.sprite = NeonArt.Panel(48, 24, 2f, 0.35f, 5f);
-            bg.type = UnityEngine.UI.Image.Type.Sliced;
-            bg.color = tint * 0.9f;
-            bg.raycastTarget = false;
+            var border = rt.gameObject.AddComponent<Image>();
+            border.color = Ink;
+            border.raycastTarget = false;
+
+            var fillRt = Rect("Fill", rt);
+            fillRt.anchorMin = Vector2.zero; fillRt.anchorMax = Vector2.one;
+            fillRt.offsetMin = new Vector2(4, 4); fillRt.offsetMax = new Vector2(-4, -4);
+            var fill = fillRt.gameObject.AddComponent<Image>();
+            fill.color = Color.Lerp(tint, Paper, 0.6f);
+            fill.raycastTarget = false;
 
             var icon = Rect("icon", rt);
             icon.anchorMin = new Vector2(0f, 0.5f); icon.anchorMax = new Vector2(0f, 0.5f);
             icon.pivot = new Vector2(0f, 0.5f);
-            icon.sizeDelta = new Vector2(40, 40);
-            icon.anchoredPosition = new Vector2(18, 0);
+            icon.sizeDelta = new Vector2(36, 36);
+            icon.anchoredPosition = new Vector2(16, 0);
             var ig = icon.gameObject.AddComponent<Image>();
-            ig.sprite = NeonArt.Sprite(glyph, 64, 0.4f, 0.4f);
-            ig.color = tint * 1.6f;
+            ig.sprite = NeonArt.Sprite(glyph, 64, 0.12f, 0.5f);
+            ig.color = tint;
             ig.raycastTarget = false;
 
             var t = Text("t", rt, text, 32);
@@ -131,31 +147,36 @@ namespace NeonHorde
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
             trt.offsetMin = new Vector2(56, 0); trt.offsetMax = new Vector2(-14, 0);
             t.alignment = TextAnchor.MiddleLeft;
+            t.fontStyle = FontStyle.Bold;
             return t;
         }
 
-        /// <summary>Big glowing title: a soft glow blob behind, bright text on top.</summary>
+        /// <summary>Headline placard: heavy ink text, slight tilt, a solid colour bar under it.</summary>
         public static void Title(string text, Transform parent, Vector2 anchor, Vector2 pos, int size, Color tint)
         {
-            var glow = Rect("TitleGlow", parent);
-            glow.anchorMin = glow.anchorMax = anchor; glow.pivot = new Vector2(0.5f, 0.5f);
-            glow.sizeDelta = new Vector2(text.Length * size * 0.85f, size * 3f);
-            glow.anchoredPosition = pos;
-            var gi = glow.gameObject.AddComponent<Image>();
-            gi.sprite = NeonArt.GlowSprite(128, 1.6f);
-            gi.color = tint * 0.5f;
-            gi.raycastTarget = false;
+            var holder = Rect("TitleHolder", parent);
+            holder.anchorMin = holder.anchorMax = anchor;
+            holder.pivot = new Vector2(0.5f, 0.5f);
+            holder.sizeDelta = new Vector2(1400, size * 2f);
+            holder.anchoredPosition = pos;
+            holder.localRotation = Quaternion.Euler(0, 0, -2.5f);
 
-            var t = Text("Title", parent, text, size);
-            var trt = (RectTransform)t.transform;
-            trt.anchorMin = trt.anchorMax = anchor; trt.pivot = new Vector2(0.5f, 0.5f);
-            trt.sizeDelta = new Vector2(1400, size * 2f);
-            trt.anchoredPosition = pos;
-            t.color = Color.white;
+            var bar = Rect("Bar", holder);
+            bar.anchorMin = new Vector2(0.5f, 0.5f); bar.anchorMax = new Vector2(0.5f, 0.5f);
+            bar.pivot = new Vector2(0.5f, 0.5f);
+            bar.sizeDelta = new Vector2(text.Length * size * 0.62f + 40f, size * 0.34f);
+            bar.anchoredPosition = new Vector2(0, -size * 0.62f);
+            var bi = bar.gameObject.AddComponent<Image>();
+            bi.color = tint;
+            bi.raycastTarget = false;
+
+            var t = Text("Title", holder, text, size);
+            Stretch((RectTransform)t.transform);
+            t.color = Ink;
             t.fontStyle = FontStyle.Bold;
-            var outline = t.gameObject.AddComponent<UnityEngine.UI.Outline>();
-            outline.effectColor = tint;
-            outline.effectDistance = new Vector2(3, 3);
+            var sh = t.gameObject.AddComponent<UnityEngine.UI.Shadow>();
+            sh.effectColor = new Color(1f, 1f, 1f, 0.6f);
+            sh.effectDistance = new Vector2(2, -3);
         }
     }
 }

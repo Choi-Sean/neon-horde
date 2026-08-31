@@ -425,9 +425,9 @@ namespace NeonHorde
                     float baseRot = ((s >> 1) % 15) - 7f;                  // -7..+7 deg
                     float sizeJit = 0.92f + ((s >> 4) & 7) / 7f * 0.16f;   // 0.92..1.08
 
-                    // "적당히": modest face scale, hard cap per tier
-                    float cap = boss ? 1.8f : isMid ? 1.25f : 0.8f;
-                    float sc = Mathf.Min(e.radius * 1.35f * sizeJit, cap);
+                    // "적당히": modest face scale, hard cap per tier (~70% of the last pass)
+                    float cap = boss ? 1.26f : isMid ? 0.88f : 0.56f;
+                    float sc = Mathf.Min(e.radius * 0.95f * sizeJit, cap);
 
                     _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, sc * 1.15f);
 
