@@ -45,7 +45,7 @@ namespace NeonHorde
         // "face mode": if Resources/art/enemy_face exists, every enemy is that face on a
         // coloured glow disc (kind still readable by colour + size).
         bool _faceMode;
-        Sprite _faceSprite, _glowSprite;
+        Sprite _faceSprite, _faceHitSprite, _glowSprite;
 
         static readonly string[] ShoutSpawn = { "WAAAGH!", "WRONG!", "NOT FAIR!", "SAD!", "BELIEVE ME!" };
         static readonly string[] ShoutHit = { "OW!", "OUCH!", "AARGH!", "NO!", "RIGGED!" };
@@ -81,6 +81,7 @@ namespace NeonHorde
             // Joke build: every enemy wears a face. Real PNG if dropped in
             // Resources/art/enemy_face.png, otherwise the built-in cartoon face.
             _faceSprite = SpriteBank.Get("enemy_face") ?? FaceArt.AngryFace();
+            _faceHitSprite = SpriteBank.Get("enemy_face_hit"); // optional 2nd frame
             _faceMode = _faceSprite != null;
             if (_faceMode) _glowSprite = NeonArt.GlowSprite(96, 1.7f);
         }
@@ -401,8 +402,11 @@ namespace NeonHorde
                 {
                     // coloured glow disc behind (kind read) + the face on top
                     _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, e.radius * 3.6f);
-                    Color face = e.hitFlash > 0f ? new Color(2.2f, 0.6f, 0.6f, 1f) : Color.white;
-                    _pool.Draw(_faceSprite, e.pos, -0.1f, face, e.radius * 2.6f);
+                    bool hit = e.hitFlash > 0f;
+                    Sprite fs = hit && _faceHitSprite != null ? _faceHitSprite : _faceSprite;
+                    Color face = hit && _faceHitSprite == null ? new Color(2.2f, 0.6f, 0.6f, 1f) : Color.white;
+                    float wobble = hit ? 12f * Mathf.Sin(Time.time * 90f) : 0f;
+                    _pool.Draw(fs, e.pos, -0.1f, face, e.radius * 2.6f, wobble);
                     continue;
                 }
 

@@ -9,11 +9,16 @@ namespace NeonHorde.EditorTools
     {
         const string Dir = "Assets/_Project/Resources/branding";
         const string MarkPath = Dir + "/logo_mark.png";
-        const string IconPath = Dir + "/icon_1024.png";
+        // Icon lives OUTSIDE Resources: it's only needed at build time for
+        // PlayerSettings.SetIcons (which bakes its own copy). Keeping a 1024 uncompressed
+        // texture in Resources just bloats the APK for nothing.
+        const string IconDir = "Assets/_Project/ArtSource";
+        const string IconPath = IconDir + "/icon_1024.png";
 
         public static void Apply()
         {
             Directory.CreateDirectory(Dir);
+            Directory.CreateDirectory(IconDir);
             WritePng(MarkPath, DrawMark(512, transparentBg: true));
             WritePng(IconPath, DrawMark(1024, transparentBg: false));
             AssetDatabase.ImportAsset(MarkPath, ImportAssetOptions.ForceUpdate);
