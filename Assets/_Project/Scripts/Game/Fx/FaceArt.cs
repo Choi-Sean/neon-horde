@@ -85,16 +85,14 @@ namespace NeonHorde
             return _cached;
         }
 
-        static Sprite _hurtCache;
-
         /// <summary>
-        /// A "hurt" variant of any face sprite, built once at load: radial pinch (scrunch)
+        /// A "hurt" variant of a face sprite, built once at load: radial pinch (scrunch)
         /// + red wince tint + X eyes + gritted mouth. Works on the supplied photo or on
         /// AngryFace(). Falls back to AngryFace() if the source texture isn't readable.
+        /// Caller is responsible for caching the result (called once per face in Awake).
         /// </summary>
         public static Sprite DeriveHurt(Sprite src)
         {
-            if (_hurtCache != null) return _hurtCache;
             if (src == null) return AngryFace();
 
             var st = src.texture;
@@ -154,9 +152,9 @@ namespace NeonHorde
             { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             tex.SetPixels32(outPx);
             tex.Apply();
-            _hurtCache = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), src.pixelsPerUnit);
-            _hurtCache.name = "face_hurt";
-            return _hurtCache;
+            var hurt = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), src.pixelsPerUnit);
+            hurt.name = "face_hurt";
+            return hurt;
         }
     }
 }

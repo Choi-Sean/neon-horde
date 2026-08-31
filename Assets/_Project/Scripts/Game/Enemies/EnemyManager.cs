@@ -47,6 +47,8 @@ namespace NeonHorde
         // coloured glow disc (kind still readable by colour + size).
         bool _faceMode;
         Sprite _faceSprite, _faceHitSprite, _glowSprite;
+        Sprite _faceBigSprite, _faceBigHitSprite; // Tank / FrostTank / elite / boss
+        static readonly Color HurtTint = new Color(2.2f, 0.6f, 0.6f, 1f);
 
         static readonly string[] ShoutSpawn = { "WAAAGH!", "WRONG!", "NOT FAIR!", "SAD!", "BELIEVE ME!" };
         static readonly string[] ShoutHit = { "OW!", "OUCH!", "AARGH!", "NO!", "RIGGED!" };
@@ -84,6 +86,9 @@ namespace NeonHorde
             _faceSprite = SpriteBank.Get("enemy_face") ?? FaceArt.AngryFace();
             // hand-made hit frame if supplied, else derive a "hurt" face from the base
             _faceHitSprite = SpriteBank.Get("enemy_face_hit") ?? FaceArt.DeriveHurt(_faceSprite);
+            // big enemies (Tank / FrostTank / elite / boss) get their own face if provided
+            _faceBigSprite = SpriteBank.Get("enemy_face_big") ?? _faceSprite;
+            _faceBigHitSprite = SpriteBank.Get("enemy_face_big_hit"); // optional; else tint+shake
             _faceMode = _faceSprite != null;
             if (_faceMode) _glowSprite = NeonArt.GlowSprite(96, 1.7f);
         }
@@ -407,6 +412,9 @@ namespace NeonHorde
                     _pool.Draw(_glowSprite, e.pos, 0f, kindCol * 0.9f, e.radius * 3.6f);
 
                     bool hit = e.hitFlash > 0f;
+                    bool big = boss || elite
+                               || e.id == (byte)EnemyId.Tank || e.id == (byte)EnemyId.FrostTank;
+
                     // per-enemy jitter so a horde isn't identical clones
                     int s = e.seed;
                     float flip = (s & 1) == 0 ? 1f : -1f;
@@ -414,10 +422,13 @@ namespace NeonHorde
                     float sizeJit = 0.9f + ((s >> 4) & 7) / 7f * 0.22f;   // 0.90..1.12
                     float sc = e.radius * 2.6f * sizeJit;
 
+                    Sprite baseF = big ? _faceBigSprite : _faceSprite;
+                    Sprite hurtF = big ? _faceBigHitSprite : _faceHitSprite;
+                    Sprite fs = hit && hurtF != null ? hurtF : baseF;
+                    Color col = hit && hurtF == null ? HurtTint : Color.white;
                     float rot = baseRot + (hit ? 16f * Mathf.Sin(Time.time * 80f + s) : 0f);
-                    Sprite fs = hit ? _faceHitSprite : _faceSprite;
                     float scHit = hit ? sc * 1.12f : sc;                  // pop on hit
-                    _pool.Draw(fs, e.pos, -0.1f, Color.white, new Vector2(flip * scHit, scHit), rot);
+                    _pool.Draw(fs, e.pos, -0.1f, col, new Vector2(flip * scHit, scHit), rot);
                     continue;
                 }
 
