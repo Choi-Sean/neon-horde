@@ -43,3 +43,7 @@ crashlytics-build.properties
 
 # Signing — NEVER commit the keystore or its passwords
 /keystore/
+
+# personal joke-build art (real photos / memes) — keep off GitHub
+/Assets/_Project/Resources/art/
+/Assets/_Project/Resources/art.meta
