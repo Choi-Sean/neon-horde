@@ -21,6 +21,8 @@ namespace NeonHorde
         Transform _rig;         // flips + leans
         Transform _bob;         // vertical bob
         SpriteRenderer _head, _torso, _armL, _armR, _legL, _legR, _glow;
+        SpriteRenderer _avatar; // real-art billboard (sprite mode)
+        bool _spriteMode;
         Vector3 _lastPos;
         float _cycle, _speedSmooth, _facing = 1f;
         Vector2? _aim;
@@ -61,6 +63,27 @@ namespace NeonHorde
             var bobT = _rig.Find("Bob");
             _bob = bobT != null ? bobT : new GameObject("Bob").transform;
             _bob.SetParent(_rig, false);
+
+            // real-art avatar if a char_<id> sprite exists (runtime only — needs the run)
+            Sprite charSprite = null;
+            if (Application.isPlaying && RunManager.Instance != null)
+                charSprite = SpriteBank.Get("char_" + RunManager.Instance.State.characterId.ToString().ToLowerInvariant());
+            _spriteMode = charSprite != null;
+            if (_spriteMode)
+            {
+                _glow = Part("Glow", _bob, NeonArt.GlowSprite(128, 2.2f), 0);
+                _avatar = Part("Avatar", _bob, charSprite, 2);
+                var cc = CharacterCatalog.Get(RunManager.Instance.State.characterId).color;
+                _glow.color = cc * 0.35f;
+                _avatar.color = Color.white;
+                float ah = size * 3.4f;                          // ~2.7 world units tall
+                _avatar.transform.localScale = Vector3.one * (ah / _avatar.sprite.bounds.size.y);
+                _avatar.transform.localPosition = new Vector3(0f, ah * 0.5f, 0f);
+                _glow.transform.localScale = Vector3.one * (ah * 1.1f);
+                _glow.transform.localPosition = new Vector3(0f, ah * 0.45f, 0f);
+                _lastPos = transform.position;
+                return;
+            }
 
             var torsoCap = NeonArt.Capsule(24, 96, 0.16f, 0.5f);
             var limbCap = NeonArt.Capsule(20, 96, 0.16f, 0.9f);   // pivot near top → swings from joint
@@ -141,6 +164,20 @@ namespace NeonHorde
 
             float t = Time.time;
             bool aiming = _aim.HasValue;
+
+            if (_spriteMode)
+            {
+                float bob = (moving ? Mathf.Abs(Mathf.Sin(t * 9f)) * 0.05f : Mathf.Sin(t * 2.2f) * 0.02f) * size;
+                _bob.localPosition = new Vector3(0f, bob, 0f);
+                _rig.localRotation = Quaternion.Lerp(_rig.localRotation,
+                    Quaternion.Euler(0, 0, moving ? -_facing * 5f : 0f), 8f * dt);
+                if (_glow != null)
+                {
+                    float gs = size * 3.4f * 1.1f * (1f + 0.06f * Mathf.Sin(t * 2.5f));
+                    _glow.transform.localScale = Vector3.one * gs;
+                }
+                return;
+            }
 
             // legs: walk cycle when moving, planted otherwise
             if (moving)

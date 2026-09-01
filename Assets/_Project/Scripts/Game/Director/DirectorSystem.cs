@@ -35,7 +35,7 @@ namespace NeonHorde
             RunState st = _run.State;
             float t = st.time;
 
-            float rate = Mathf.Min(3.5f + t * 0.4f, 60f) * st.stats.enemyRateMul;
+            float rate = Mathf.Min(2f + t * 0.16f, 24f) * st.stats.enemyRateMul;
             _accum += rate * dt;
             int n = Mathf.FloorToInt(_accum);
             _accum -= n;

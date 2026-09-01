@@ -22,6 +22,25 @@ namespace NeonHorde
             }
         }
 
+        // A 4x4 white sprite. uGUI Images with a null sprite don't render in this
+        // Unity/URP build — every Image we make gets this so it actually draws.
+        static Sprite _solid;
+        public static Sprite Solid
+        {
+            get
+            {
+                if (_solid == null)
+                {
+                    var t = new Texture2D(4, 4) { name = "uikit_solid" };
+                    var px = new Color32[16];
+                    for (int i = 0; i < 16; i++) px[i] = new Color32(255, 255, 255, 255);
+                    t.SetPixels32(px); t.Apply();
+                    _solid = Sprite.Create(t, new UnityEngine.Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4);
+                }
+                return _solid;
+            }
+        }
+
         public static readonly Color Ink    = new Color(0.10f, 0.10f, 0.11f, 1f);
         public static readonly Color Paper  = new Color(0.93f, 0.90f, 0.83f, 1f);
         public static readonly Color Panel  = new Color(0.92f, 0.89f, 0.81f, 0.98f);
@@ -57,6 +76,7 @@ namespace NeonHorde
         {
             var rt = Rect(name, parent);
             var img = rt.gameObject.AddComponent<Image>();
+            img.sprite = Solid;
             img.color = color;
             img.raycastTarget = false;
             return img;
@@ -85,6 +105,7 @@ namespace NeonHorde
         {
             var rt = Rect(name, parent);
             var border = rt.gameObject.AddComponent<Image>();  // outer ink box
+            border.sprite = Solid;
             border.color = Ink;
 
             var btn = rt.gameObject.AddComponent<Button>();
@@ -94,6 +115,7 @@ namespace NeonHorde
             fillRt.anchorMin = Vector2.zero; fillRt.anchorMax = Vector2.one;
             fillRt.offsetMin = new Vector2(5, 5); fillRt.offsetMax = new Vector2(-5, -5);
             var fill = fillRt.gameObject.AddComponent<Image>();
+            fill.sprite = Solid;
             fill.color = Color.Lerp(tint, Paper, 0.35f); // printed-stock, not neon
             fill.raycastTarget = false;
 
@@ -122,6 +144,7 @@ namespace NeonHorde
         {
             var rt = Rect(name, parent);
             var border = rt.gameObject.AddComponent<Image>();
+            border.sprite = Solid;
             border.color = Ink;
             border.raycastTarget = false;
 
@@ -129,6 +152,7 @@ namespace NeonHorde
             fillRt.anchorMin = Vector2.zero; fillRt.anchorMax = Vector2.one;
             fillRt.offsetMin = new Vector2(4, 4); fillRt.offsetMax = new Vector2(-4, -4);
             var fill = fillRt.gameObject.AddComponent<Image>();
+            fill.sprite = Solid;
             fill.color = Color.Lerp(tint, Paper, 0.6f);
             fill.raycastTarget = false;
 
@@ -167,6 +191,7 @@ namespace NeonHorde
             bar.sizeDelta = new Vector2(text.Length * size * 0.62f + 40f, size * 0.34f);
             bar.anchoredPosition = new Vector2(0, -size * 0.62f);
             var bi = bar.gameObject.AddComponent<Image>();
+            bi.sprite = Solid;
             bi.color = tint;
             bi.raycastTarget = false;
 

@@ -139,36 +139,16 @@ namespace NeonHorde.EditorTools
             PlayerSettings.Android.keyaliasPass = string.Empty;
         }
 
-        // Mirror Assets/_Project/Art/ (the user's drop folder, left untouched) into
-        // Resources/art/ so SpriteBank can load them, then force a reimport through
-        // ArtImportSettings (Sprite mode). Extensions Unity can't import (.jfif) are
-        // copied with a .jpg name.
+        // Force Resources/gfx/ through ArtImportSettings (Sprite mode + pivots) before
+        // a build so freshly-added PNGs load via SpriteBank without a manual reimport.
         static void ReimportArtFolder()
         {
-            const string src = "Assets/_Project/Art";
-            const string dst = "Assets/_Project/Resources/art";
-            Directory.CreateDirectory(dst);
-
-            if (Directory.Exists(src))
+            const string dst = "Assets/_Project/Resources/gfx";
+            if (Directory.Exists(dst))
             {
-                foreach (var f in Directory.GetFiles(src))
-                {
-                    string ext = Path.GetExtension(f).ToLowerInvariant();
-                    if (ext == ".meta") continue;
-                    string name = Path.GetFileNameWithoutExtension(f);
-                    if (ext == ".jfif") ext = ".jpg";
-                    if (ext != ".png" && ext != ".jpg" && ext != ".jpeg") continue;
-                    string target = Path.Combine(dst, name + ext);
-                    if (!File.Exists(target) || File.GetLastWriteTimeUtc(f) > File.GetLastWriteTimeUtc(target))
-                    {
-                        File.Copy(f, target, true);
-                        Debug.Log($"[Build] art sync {name}{ext}");
-                    }
-                }
+                AssetDatabase.ImportAsset(dst, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+                Debug.Log("[Build] reimported " + dst);
             }
-
-            AssetDatabase.ImportAsset(dst, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
-            Debug.Log("[Build] reimported " + dst);
         }
 
         static void ApplyVersion()

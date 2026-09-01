@@ -3,16 +3,15 @@ namespace NeonHorde
     /// <summary>Runtime quality knobs derived from the player's settings.</summary>
     public static class GameConfig
     {
-        // Enemies render as pooled SpriteRenderers now (see SpritePool). A few hundred
-        // on screen already reads as a "horde"; keep the cap sane for mobile draw cost.
-        public static int MaxEnemiesOnScreen = 600;
+        // Real-art enemies are big sprites — a couple hundred already fills the screen.
+        public static int MaxEnemiesOnScreen = 200;
         public static bool DamageNumbers = true;
         public static bool ScreenShake = true;
 
         public static void ApplyFromSettings(int quality)
         {
             bool low = quality == 0;
-            MaxEnemiesOnScreen = low ? 350 : 600;
+            MaxEnemiesOnScreen = low ? 120 : 200;
             DamageNumbers = !low;
             ScreenShake = true;
         }

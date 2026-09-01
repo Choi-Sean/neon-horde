@@ -38,6 +38,8 @@ namespace NeonHorde
 
         SpritePool _pool;
         Sprite[][] _framesByKind;   // procedural creature walk cycles (CreatureArt)
+        Sprite[] _realByKind;       // real art (Resources/gfx/enemy_*) if present
+        Sprite _bossSprite;
         Color[] _colorByKind;
         Sprite _glowSprite;
         static readonly Color EliteTint = new Color(2.6f, 2.1f, 0.7f, 1f);
@@ -59,12 +61,15 @@ namespace NeonHorde
         {
             int kinds = EnemyCatalog.Count;
             _framesByKind = new Sprite[kinds][];
+            _realByKind = new Sprite[kinds];
             _colorByKind = new Color[kinds];
             for (int i = 0; i < kinds; i++)
             {
                 _framesByKind[i] = CreatureArt.Get((EnemyId)i);
+                _realByKind[i] = SpriteBank.Get("enemy_" + ((EnemyId)i).ToString().ToLowerInvariant());
                 _colorByKind[i] = EnemyCatalog.Get((EnemyId)i).color * 1.5f;
             }
+            _bossSprite = SpriteBank.Get("boss");
             _glowSprite = NeonArt.GlowSprite(96, 1.9f);
             _pool = new SpritePool("EnemySprites", 6, transform);
         }
@@ -348,6 +353,9 @@ namespace NeonHorde
             return true;
         }
 
+        static float moving_bob(float sp, float t, int seed) =>
+            Mathf.Abs(Mathf.Sin(t * (5f + sp * 2f) + seed * 0.4f));
+
         void LateUpdate()
         {
             if (_pool == null) return;
@@ -360,20 +368,37 @@ namespace NeonHorde
                 bool elite = !boss && (e.flags & (byte)EFlag.Elite) != 0;
                 bool hit = e.hitFlash > 0f;
 
+                int s = e.seed;
+                float speed = e.vel.magnitude;
+                float faceX = e.vel.x >= 0f ? 1f : -1f;
+
+                Sprite real = boss ? _bossSprite : _realByKind[e.id];
+                if (real != null)
+                {
+                    // real art: full colour, no tint; bob + face travel + hit-flash white
+                    Color rc = hit ? Color.Lerp(Color.white, Color.white * 3f, 0.6f) : Color.white;
+                    float rsc = e.radius * 3.4f;
+                    float rbob = (moving_bob(speed, now, s)) * 0.05f * rsc;
+                    Color aura = _colorByKind[e.id];
+                    if (elite) aura = Color.Lerp(aura, EliteTint, 0.5f);
+                    _pool.Draw(_glowSprite, new Vector2(e.pos.x, e.pos.y), 0f,
+                        aura * (boss ? 0.7f : elite ? 0.55f : 0.35f), rsc * (boss ? 1.5f : 1.25f));
+                    _pool.Draw(real, new Vector2(e.pos.x, e.pos.y + rbob), -0.1f, rc,
+                        new Vector2(faceX * rsc, rsc));
+                    continue;
+                }
+
                 Color col = _colorByKind[e.id];
                 if (elite) col = Color.Lerp(col, EliteTint, 0.4f);
                 if (boss) col = Color.Lerp(col, BossTint, 0.35f);
                 if (hit) col = Color.Lerp(col, Color.white * 2.4f, 0.75f);
 
                 float sc = e.radius * 2.7f;
-                int s = e.seed;
 
                 // scuttle: frame rate scales with speed; per-enemy phase offset; face travel
-                float speed = e.vel.magnitude;
                 float fPhase = now * (6f + speed * 2.2f) + s * 0.37f;
                 var frames = _framesByKind[e.id];
                 Sprite fr = frames[((int)fPhase % frames.Length + frames.Length) % frames.Length];
-                float faceX = e.vel.x >= 0f ? 1f : -1f;
                 float bob = Mathf.Abs(Mathf.Sin(fPhase)) * 0.06f * sc;
 
                 // soft aura so a dark-world horde still reads

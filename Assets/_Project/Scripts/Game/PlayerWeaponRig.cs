@@ -48,8 +48,17 @@ namespace NeonHorde
             {
                 _shownId = inst.id;
                 _shownLevel = inst.level;
-                _wr.sprite = WeaponArt.Get(inst.id, inst.level);
-                _wr.color = WeaponCatalog.Get(inst.id).color * 1.6f;
+                var real = SpriteBank.Get("wpn_" + inst.id.ToString().ToLowerInvariant());
+                if (real != null)
+                {
+                    _wr.sprite = real;
+                    _wr.color = Color.white;                       // real art: keep its own colour
+                }
+                else
+                {
+                    _wr.sprite = WeaponArt.Get(inst.id, inst.level);
+                    _wr.color = WeaponCatalog.Get(inst.id).color * 1.6f;
+                }
             }
 
             // aim at nearest enemy, else keep pointing the last way we aimed / moved
@@ -66,9 +75,12 @@ namespace NeonHorde
 
             _shape?.SetAim(target);
 
-            float sc = (_shape != null ? _shape.Scale : 0.8f) * (1f + _shownLevel * 0.045f);
+            // target on-screen length in world units, normalised by the sprite's own size
+            float wantLen = (_shape != null ? _shape.Scale : 0.8f) * 1.5f * (1f + _shownLevel * 0.05f);
+            float unit = _wr.sprite != null ? Mathf.Max(0.01f, _wr.sprite.bounds.size.x) : 1f;
+            float sc = wantLen / unit;
             float ang = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            _wr.transform.position = shoulder + (Vector3)(dir * (0.18f * sc));
+            _wr.transform.position = shoulder + (Vector3)(dir * (wantLen * 0.15f));
             _wr.transform.rotation = Quaternion.Euler(0, 0, ang);
             _wr.transform.localScale = new Vector3(sc, dir.x < 0f ? -sc : sc, 1f); // keep upright when aiming left
         }

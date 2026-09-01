@@ -5,37 +5,33 @@ using UnityEngine;
 namespace NeonHorde.EditorTools
 {
     /// <summary>
-    /// Any texture dropped into a Resources/art/ folder is auto-imported as a Sprite so
-    /// SpriteBank.Get(...) can load it — no manual importer fiddling. Drop
-    /// enemy_face.png / ground.png / revive_gag.png in and rebuild.
+    /// Textures in Resources/gfx/ are auto-imported as Sprites so SpriteBank can load
+    /// them. Weapon sprites (wpn_*) get a left-of-centre pivot so they rotate about the
+    /// grip when aimed.
     /// </summary>
     public sealed class ArtImportSettings : AssetPostprocessor
     {
         void OnPreprocessTexture()
         {
             string p = assetPath.Replace('\\', '/');
-            if (p.IndexOf("/Resources/art/", StringComparison.OrdinalIgnoreCase) < 0) return;
+            if (p.IndexOf("/Resources/gfx/", StringComparison.OrdinalIgnoreCase) < 0) return;
 
             var ti = (TextureImporter)assetImporter;
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Single;
             ti.mipmapEnabled = false;
             ti.alphaIsTransparency = true;
-            ti.wrapMode = TextureWrapMode.Repeat;   // ground tiles need it; harmless for faces
+            ti.wrapMode = TextureWrapMode.Clamp;
             ti.filterMode = FilterMode.Bilinear;
+            ti.maxTextureSize = 512;
+            ti.textureCompression = TextureImporterCompression.Compressed;
 
-            // Normal soldier faces are read back on the CPU at runtime to derive a "hurt"
-            // variant (FaceArt.DeriveHurt) — GetPixels32 needs readable + an uncompressed
-            // (RGBA32) copy, which is heavy, so cap those at 256. mid-boss / boss / ground
-            // / gag stay compressed at 512.
             string name = System.IO.Path.GetFileNameWithoutExtension(p).ToLowerInvariant();
-            bool readback = name == "mon1" || name == "mon2" || name == "mon3"
-                            || name == "enemy_face" || name == "enemy_face_2" || name == "enemy_face_3";
-            ti.isReadable = readback;
-            ti.maxTextureSize = readback ? 256 : 512;
-            ti.textureCompression = readback
-                ? TextureImporterCompression.Uncompressed
-                : TextureImporterCompression.Compressed;
+            if (name.StartsWith("wpn_"))
+            {
+                ti.spriteAlignment = (int)SpriteAlignment.Custom;
+                ti.spritePivot = new Vector2(0.22f, 0.5f);   // near the grip
+            }
         }
     }
 }

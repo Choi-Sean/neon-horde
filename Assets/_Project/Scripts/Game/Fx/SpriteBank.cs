@@ -4,10 +4,9 @@ using UnityEngine;
 namespace NeonHorde
 {
     /// <summary>
-    /// Optional real-art lookup. Drop PNGs (imported as Sprite) into
-    /// Assets/_Project/Resources/art/ and they override the procedural shapes by key,
-    /// e.g. "enemy_face", "player_pulse", "ground_grid". Missing key -> null, caller
-    /// falls back to NeonArt.
+    /// Real-art lookup. PNGs live in Assets/_Project/Resources/gfx/ (produced from the
+    /// AI images by the de-checker pipeline). Keys: "char_pulse", "enemy_walker",
+    /// "boss", "wpn_bolt", ... Missing key -> null, caller falls back to procedural.
     /// </summary>
     public static class SpriteBank
     {
@@ -16,7 +15,7 @@ namespace NeonHorde
         public static Sprite Get(string key)
         {
             if (_cache.TryGetValue(key, out var s)) return s;
-            s = Resources.Load<Sprite>("art/" + key);
+            s = Resources.Load<Sprite>("gfx/" + key);
             _cache[key] = s;
             return s;
         }
