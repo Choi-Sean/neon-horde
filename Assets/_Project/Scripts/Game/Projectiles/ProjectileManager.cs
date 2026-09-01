@@ -73,6 +73,15 @@ namespace NeonHorde
 
         void RemoveAt(int i) { _count--; if (i != _count) _p[i] = _p[_count]; }
 
+        /// <summary>Drop every projectile of a kind (orbit weapon refreshes its ring
+        /// each cooldown instead of stacking new orbs on top of the old ones).</summary>
+        public void ClearKind(ProjKind kind)
+        {
+            byte k = (byte)kind;
+            for (int i = _count - 1; i >= 0; i--)
+                if (_p[i].kind == k) RemoveAt(i);
+        }
+
         public void SimTick(float dt)
         {
             Vector2 pp = _player != null ? (Vector2)_player.position : Vector2.zero;
@@ -137,7 +146,12 @@ namespace NeonHorde
                     case ProjKind.Orbit:
                         p.phase += p.param * Mathf.Deg2Rad * dt;
                         p.pos = pp + new Vector2(Mathf.Cos(p.phase), Mathf.Sin(p.phase)) * p.area;
-                        if (_enemies != null) _enemies.DamageFirstInRadius(p.pos, 0.3f, p.dmg * dt * 8f);
+                        // damage on a ~8 Hz tick, not every frame — one hash query per orb
+                        // per 0.12 s instead of per 1/60 s (same DPS)
+                        const float ohz = 0.12f;
+                        if (_enemies != null &&
+                            Mathf.FloorToInt(p.t / ohz) != Mathf.FloorToInt((p.t - dt) / ohz))
+                            _enemies.DamageFirstInRadius(p.pos, 0.32f, p.dmg * ohz * 8f);
                         break;
                 }
 

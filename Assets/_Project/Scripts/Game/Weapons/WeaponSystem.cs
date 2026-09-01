@@ -69,11 +69,14 @@ namespace NeonHorde
                         _enemies.DamageAllInRadius(origin, area, dmg);
                         break;
                     case WeaponBehavior.Orbit:
-                        for (int k = 0; k < count; k++)
+                        // refresh the ring each cooldown — never stack (that was the lag)
+                        _projectiles.ClearKind(ProjKind.Orbit);
+                        int orbs = Mathf.Clamp(count, 1, 10);
+                        for (int k = 0; k < orbs; k++)
                         {
-                            float ang0 = k / (float)count * Mathf.PI * 2f;
+                            float ang0 = k / (float)orbs * Mathf.PI * 2f;
                             _projectiles.Fire(ProjKind.Orbit, origin, Vector2.right, 0f, dmg * 3f,
-                                dur, 999, Mathf.Max(1.2f, area), 220f, ang0);
+                                Mathf.Max(dur, 999f), 999, Mathf.Max(1.2f, area), 220f, ang0);
                         }
                         break;
                     case WeaponBehavior.Arc:
