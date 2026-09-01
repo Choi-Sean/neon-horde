@@ -29,8 +29,11 @@ namespace NeonHorde.EditorTools
             string name = System.IO.Path.GetFileNameWithoutExtension(p).ToLowerInvariant();
             if (name.StartsWith("wpn_"))
             {
-                ti.spriteAlignment = (int)SpriteAlignment.Custom;
-                ti.spritePivot = new Vector2(0.22f, 0.5f);   // near the grip
+                var tis = new TextureImporterSettings();
+                ti.ReadTextureSettings(tis);
+                tis.spriteAlignment = (int)SpriteAlignment.Custom;
+                tis.spritePivot = new Vector2(0.22f, 0.5f);   // near the grip
+                ti.SetTextureSettings(tis);
             }
         }
     }
