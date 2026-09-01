@@ -23,10 +23,10 @@ namespace NeonHorde.EditorTools
             ti.alphaIsTransparency = true;
             ti.wrapMode = TextureWrapMode.Clamp;
             ti.filterMode = FilterMode.Bilinear;
-            ti.maxTextureSize = 512;
             ti.textureCompression = TextureImporterCompression.Compressed;
 
             string name = System.IO.Path.GetFileNameWithoutExtension(p).ToLowerInvariant();
+            ti.maxTextureSize = name.StartsWith("wpn_") ? 256 : name == "boss" ? 512 : 384;
             if (name.StartsWith("wpn_"))
             {
                 var tis = new TextureImporterSettings();
