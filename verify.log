@@ -1,0 +1,660 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.0/staging' branch; Version is '6000.0.82f1 (2fb0dae735e1) revision 3125466'; Using compiler version '193933523'; Build Type 'Release'
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chois" at "2026-09-01T07:59:27.0745348Z"
+OS: 'Windows 10  (10.0.19045) 64bit Core' Language: 'en' Physical Memory: 32700 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-09-01T07:59:27Z
+
+COMMAND LINE ARGUMENTS:
+D:\Unity\Hub\Editor\6000.0.82f1\Editor\Unity.exe
+-batchmode
+-projectPath
+D:\Project\game
+-executeMethod
+NeonHorde.EditorTools.ScreenVerify.Run
+-screen-width
+720
+-screen-height
+1560
+-logFile
+D:\Project\game\verify.log
+Successfully changed project path to: D:\Project\game
+D:/Project/game
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [22168]  Target information:
+
+Player connection [22168]  * "[IP] 10.0.0.244 [Port] 55504 [Flags] 2 [Guid] 4197091472 [EditorId] 4197091472 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-IO41H0T) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [22168] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [22168] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-16736" after 0.4 seconds.
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Error: HandshakeResponse reported an error:
+	ResponseCode: 505
+	ResponseStatus: Unsupported protocol version '1.18.3'.
+[Licensing::Module] Error: Failed to handshake to channel: "LicenseClient-chois"
+[Licensing::IpcConnector] LicenseClient-chois channel disconnected successfully.
+[Licensing::IpcConnector] Channel LicenseClient-chois-6000.0.82 doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 17328)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chois-6000.0.82" at "2026-09-01T07:59:28.6573741Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 17328, path: "D:/Unity/Hub/Editor/6000.0.82f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              725a56f8fd094209881ce7feb5b52237
+  Correlation Id:          05358eb158ee3349aec943defded4ec3
+  External correlation Id: 5767790419171588599
+  Machine Id:              HwzZScfnXzT3O+xp8i9KRkAYvKA=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-chois-6000.0.82" (connect: 0.25s, validation: 0.20s, handshake: 0.01s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-chois-6000.0.82-notifications" at "2026-09-01T07:59:28.8679955Z"
+[Licensing::Module] Connected to LicensingClient (PId: 17328, launch time: 0.01, total connection time: 0.46s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 2475666421471-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 1.83s
+[Licensing::Module] Licensing is initialized (took 1.18s).
+[Licensing::Client] Successfully resolved entitlement details
+Refreshing native plugins compatible for Editor in 0.08 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.0.82f1 (2fb0dae735e1)
+[Subsystems] Discovering subsystems at path D:/Unity/Hub/Editor/6000.0.82f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path D:/Project/game/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce RTX 2060 (ID=0x1e89)
+    Vendor:   NVIDIA
+    VRAM:     5945 MB
+    Driver:   32.0.15.8180
+Initialize mono
+Mono path[0] = 'D:/Unity/Hub/Editor/6000.0.82f1/Editor/Data/Managed'
+Mono path[1] = 'D:/Unity/Hub/Editor/6000.0.82f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'D:/Unity/Hub/Editor/6000.0.82f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56736
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: D:/Unity/Hub/Editor/6000.0.82f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Register platform support module: D:/Unity/Hub/Editor/6000.0.82f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+[Licensing::Client] Successfully resolved entitlement details
+Register platform support module: D:/Unity/Hub/Editor/6000.0.82f1/Editor/Data/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.dll
+Registered in 0.008907 seconds.
+- Loaded All Assemblies, in  0.441 seconds
+Native extension for iOS target not found
+Native extension for Android target not found
+Android Extension - Scanning For ADB Devices 2322 ms
+Native extension for WindowsStandalone target not found
+Package Manager log level set to [2]
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  2.675 seconds
+Domain Reload Profiling: 3115ms
+	BeginReloadAssembly (170ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (1ms)
+	RebuildCommonClasses (39ms)
+	RebuildNativeTypeToScriptingClass (13ms)
+	initialDomainReloadingComplete (49ms)
+	LoadAllAssembliesAndSetupDomain (169ms)
+		LoadAssemblies (171ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (164ms)
+			TypeCache.Refresh (162ms)
+				TypeCache.ScanAssembly (148ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (2675ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (2642ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (2425ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (54ms)
+			ProcessInitializeOnLoadAttributes (105ms)
+			ProcessInitializeOnLoadMethodAttributes (54ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 54 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.inputsystem@1.19.0 (location: D:\Project\game\Library\PackageCache\com.unity.inputsystem@21a28c3a6c83)
+    com.unity.ide.rider@3.0.39 (location: D:\Project\game\Library\PackageCache\com.unity.ide.rider@4504839d03f7)
+    com.unity.ide.visualstudio@2.0.27 (location: D:\Project\game\Library\PackageCache\com.unity.ide.visualstudio@dc1ddd4f09b6)
+    com.unity.searcher@4.9.3 (location: D:\Project\game\Library\PackageCache\com.unity.searcher@1e17ce91558d)
+    com.unity.burst@1.8.30 (location: D:\Project\game\Library\PackageCache\com.unity.burst@2f3d916873ea)
+    com.unity.mathematics@1.3.2 (location: D:\Project\game\Library\PackageCache\com.unity.mathematics@8017b507cc74)
+    com.unity.collections@2.6.8 (location: D:\Project\game\Library\PackageCache\com.unity.collections@84e8eb3fc12e)
+    com.unity.nuget.mono-cecil@1.11.6 (location: D:\Project\game\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.5.0 (location: D:\Project\game\Library\PackageCache\com.unity.test-framework.performance@8b56083ec0f0)
+  Built-in packages:
+    com.unity.render-pipelines.universal@17.0.4 (location: D:\Project\game\Library\PackageCache\com.unity.render-pipelines.universal@c7abd84d7030)
+    com.unity.ugui@2.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.ugui@8bb446d869cd)
+    com.unity.2d.sprite@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.2d.sprite@0eb6ea2c7181)
+    com.unity.2d.tilemap@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.2d.tilemap@a9ce0f834706)
+    com.unity.test-framework@1.6.0 (location: D:\Project\game\Library\PackageCache\com.unity.test-framework@082c24152fd4)
+    com.unity.multiplayer.center@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.multiplayer.center@f3fb577b3546)
+    com.unity.modules.accessibility@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.ai@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vehicles@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: D:\Project\game\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: D:\Project\game\Library\PackageCache\com.unity.ext.nunit@031a54704bff)
+    com.unity.render-pipelines.core@17.0.4 (location: D:\Project\game\Library\PackageCache\com.unity.render-pipelines.core@f663854f0ceb)
+    com.unity.shadergraph@17.0.4 (location: D:\Project\game\Library\PackageCache\com.unity.shadergraph@14250cfec0ec)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: D:\Project\game\Library\PackageCache\com.unity.render-pipelines.universal-config@dd206bf35d04)
+    com.unity.rendering.light-transport@1.0.1 (location: D:\Project\game\Library\PackageCache\com.unity.rendering.light-transport@9bd588f963c0)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.04 seconds
+[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+Starting: D:\Unity\Hub\Editor\6000.0.82f1\Editor\Data\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: D:/Project/game
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 1s746ms
+[513/646    0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[634/646    1s] Csc Library/Bee/artifacts/1300b0aE.dag/NeonHorde.dll (+2 others)
+Assets\_Project\Scripts\Game\NeonShape.cs(38,14): warning CS0414: The field 'NeonShape._builtWithRun' is assigned but its value is never used
+[637/646    0s] ILPostProcess Library/Bee/artifacts/1300b0aE.dag/post-processed/NeonHorde.Tests.EditMode.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1300b0aE.dag/NeonHorde.Tests.EditMode.dll, with 140 defines and 262 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[638/646    0s] ILPostProcess Library/Bee/artifacts/1300b0aE.dag/post-processed/NeonHorde.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1300b0aE.dag/NeonHorde.dll, with 142 defines and 254 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[639/646    0s] ILPostProcess Library/Bee/artifacts/1300b0aE.dag/post-processed/NeonHorde.Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1300b0aE.dag/NeonHorde.Editor.dll, with 140 defines and 269 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[642/646    0s] CopyFiles Library/ScriptAssemblies/NeonHorde.pdb
+[645/646    0s] CopyFiles Library/ScriptAssemblies/NeonHorde.dll
+*** Tundra build success (1.71 seconds), 7 items updated, 646 evaluated
+Assets\_Project\Scripts\Game\NeonShape.cs(38,14): warning CS0414: The field 'NeonShape._builtWithRun' is assigned but its value is never used
+AssetDatabase: script compilation time: 2.151527s
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.890 seconds
+Refreshing native plugins compatible for Editor in 0.38 ms, found 0 plugins.
+Native extension for iOS target not found
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  2.686 seconds
+Domain Reload Profiling: 3574ms
+	BeginReloadAssembly (331ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (11ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (135ms)
+	RebuildCommonClasses (36ms)
+	RebuildNativeTypeToScriptingClass (13ms)
+	initialDomainReloadingComplete (25ms)
+	LoadAllAssembliesAndSetupDomain (483ms)
+		LoadAssemblies (468ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (159ms)
+			TypeCache.Refresh (113ms)
+				TypeCache.ScanAssembly (102ms)
+			BuildScriptInfoCaches (36ms)
+			ResolveRequiredComponents (9ms)
+	FinalizeReload (2687ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (2517ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (39ms)
+			SetLoadedEditorAssemblies (4ms)
+			BeforeProcessingInitializeOnLoad (129ms)
+			ProcessInitializeOnLoadAttributes (2163ms)
+			ProcessInitializeOnLoadMethodAttributes (178ms)
+			AfterProcessingInitializeOnLoad (4ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (9ms)
+Refreshing native plugins compatible for Editor in 0.37 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=ab4ef1423fe1ca4489adb9010150eb0a): Total: 6.308 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=3019 ms
+		Asset DB Callback time: managed=157 ms, native=46 ms
+		Scripting: domain reloads=1, domain reload time=890 ms, compile time=2153 ms, other=40 ms
+		Project Asset Count: scripts=881, non-scripts=1767
+		Asset File Changes: new=0, changed=2, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.002ms
+	InvokePackagesCallback: 44.770ms
+	ApplyChangesToAssetFolders: 0.703ms
+	Scan: 91.331ms
+	OnSourceAssetsModified: 0.782ms
+	CategorizeAssetsWithTransientArtifact: 28.960ms
+	ProcessAssetsWithTransientArtifactChanges: 49.857ms
+	CategorizeAssets: 32.540ms
+	ImportOutOfDateAssets: 2692.648ms (537.431ms without children)
+		CompileScripts: 2152.932ms
+		ReloadNativeAssets: 0.026ms
+		UnloadImportedAssets: 1.432ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.478ms
+		InitializingProgressBar: 0.001ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.001ms
+		OnDemandSchedulerStart: 0.347ms
+	PostProcessAllAssets: 159.672ms
+	Hotreload: 1.427ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.002ms
+	UnloadStreamsBegin: 0.281ms
+	PersistCurrentRevisions: 0.071ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 3.000ms
+	Untracked: 3204.842ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 27.540ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Neon Horde
+Unloading 47 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 3892 unused Assets / (9.7 MB). Loaded Objects now: 4541.
+Memory consumption went from 170.3 MB to 160.7 MB.
+Total: 10.467600 ms (FindLiveObjects: 0.438300 ms CreateObjectMapping: 0.447600 ms MarkObjects: 5.519000 ms  DeleteObjects: 4.061600 ms)
+
+Opening scene 'Assets/_Project/Scenes/MainMenu.unity'
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/_Project/Scenes/MainMenu.unity'
+	Deserialize:            1.060 ms
+	Integration:            233.062 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.041 ms
+	Total Operation Time:   234.165 ms
+Unloading 1 unused Assets / (0.5 KB). Loaded Objects now: 4556.
+Memory consumption went from 150.3 MB to 150.3 MB.
+Total: 7.292100 ms (FindLiveObjects: 0.249600 ms CreateObjectMapping: 0.149000 ms MarkObjects: 6.871900 ms  DeleteObjects: 0.020700 ms)
+
+Unity is not designed to run with Administrator privileges.
+
+With elevated access, scripts in your project can modify system files, registry settings, or protected areas, even accidentally.
+This could make your system unstable or unbootable.
+
+Restart as a standard user for the safest experience.
+[Project] Loading completed in 15.153 seconds
+	Project init time: 				12.111 seconds
+		Template init time: 		0.000 seconds
+		Package Manager init time: 		0.360 seconds
+		Asset Database init time: 		0.208 seconds
+		Global illumination init time: 	0.005 seconds
+		Assemblies load time: 			3.134 seconds
+		Unity extensions init time: 	0.009 seconds
+		Asset Database refresh time: 	6.308 seconds
+	Scene opening time: 			2.969 seconds
+##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1788249582208,"processId":16736,"projectLoad":15.1532327,"projectInit":12.1111575,"templateInit":0.0,"packageManagerInit":0.3601223,"assetDatabaseInit":0.2075234,"globalIlluminationInit":0.0045153,"assembliesLoad":3.1338806,"unityExtensionsInit":0.0086338,"assetDatabaseRefresh":6.3079852,"sceneOpening":2.9693183}
+##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1788249582208,"processId":16736,"editorVersion":"6000.0.82f1 (2fb0dae735e1)","branch":"6000.0/staging","buildType":"Release","platform":"Windows"}
+Entering Playmode with Reload Domain disabled.
+If you experience any issues, please disable "Enter Play Mode Options" in Editor Settings
+[Consent:STUB] resolved (non-personalised)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.StubConsentService:Request (System.Action) (at Assets/_Project/Scripts/Services/IConsentService.cs:25)
+NeonHorde.GameBootstrap:Init () (at Assets/_Project/Scripts/Game/GameBootstrap.cs:54)
+
+(Filename: Assets/_Project/Scripts/Services/IConsentService.cs Line: 25)
+
+[Analytics] app_open  runs=0  linked=False
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.DebugAnalyticsService:Log (string,System.ValueTuple`2<string, object>[]) (at Assets/_Project/Scripts/Services/IAnalyticsService.cs:28)
+NeonHorde.GameBootstrap:Init () (at Assets/_Project/Scripts/Game/GameBootstrap.cs:56)
+
+(Filename: Assets/_Project/Scripts/Services/IAnalyticsService.cs Line: 28)
+
+[NeonHorde] boot — gold=0 cores=0 runs=0 char=Pulse linked=False save=C:/Users/chois/AppData/LocalLow/BitByte/Neon Horde\save.json
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.GameBootstrap:Init () (at Assets/_Project/Scripts/Game/GameBootstrap.cs:57)
+
+(Filename: Assets/_Project/Scripts/Game/GameBootstrap.cs Line: 57)
+
+Loaded scene 'Temp/__Backupscenes/0.backup'
+	Deserialize:            0.476 ms
+	Integration:            274.635 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.037 ms
+	Total Operation Time:   275.149 ms
+Asset Pipeline Refresh (id=3a51ce66748437f49a88bde5f6d6a1fc): Total: 0.038 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Created GICache directory at C:/Users/chois/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.039s, timestamps: [15.657 - 15.696]
+[Verify] shot menu_home (frame 70)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:Shot (string) (at Assets/_Project/Editor/ScreenVerify.cs:140)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:68)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 140)
+
+[Verify] called OpenCharacters
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:CallMenu (string) (at Assets/_Project/Editor/ScreenVerify.cs:170)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:69)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 170)
+
+[Verify] shot menu_characters (frame 130)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:Shot (string) (at Assets/_Project/Editor/ScreenVerify.cs:140)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:68)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 140)
+
+[Verify] called OpenShop
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:CallMenu (string) (at Assets/_Project/Editor/ScreenVerify.cs:170)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:69)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 170)
+
+[Verify] shot menu_shop (frame 190)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:Shot (string) (at Assets/_Project/Editor/ScreenVerify.cs:140)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:68)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 140)
+
+[Verify] called OpenQuests
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:CallMenu (string) (at Assets/_Project/Editor/ScreenVerify.cs:170)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:69)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 170)
+
+[Verify] shot menu_quests (frame 250)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:Shot (string) (at Assets/_Project/Editor/ScreenVerify.cs:140)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:68)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 140)
+
+[Verify] called OpenSettings
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:CallMenu (string) (at Assets/_Project/Editor/ScreenVerify.cs:170)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:69)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 170)
+
+[Verify] shot menu_settings (frame 310)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:Shot (string) (at Assets/_Project/Editor/ScreenVerify.cs:140)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:68)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 140)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 2.848200 ms
+Loaded scene 'Assets/_Project/Scenes/Game.unity'
+	Deserialize:            11.727 ms
+	Integration:            446.643 ms
+	Integration of assets:  0.522 ms
+	Thread Wait Time:       -0.131 ms
+	Total Operation Time:   458.762 ms
+Unloading 6 unused Assets / (409.8 KB). Loaded Objects now: 8757.
+Memory consumption went from 158.8 MB to 158.4 MB.
+Total: 8.935300 ms (FindLiveObjects: 0.779900 ms CreateObjectMapping: 0.332000 ms MarkObjects: 7.688600 ms  DeleteObjects: 0.134300 ms)
+
+[Analytics] run_start  char=Pulse  daily=False  seed=-70098666
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.DebugAnalyticsService:Log (string,System.ValueTuple`2<string, object>[]) (at Assets/_Project/Scripts/Services/IAnalyticsService.cs:28)
+NeonHorde.RunManager:Start () (at Assets/_Project/Scripts/Game/RunManager.cs:94)
+
+(Filename: Assets/_Project/Scripts/Services/IAnalyticsService.cs Line: 28)
+
+[Verify] spawned 8 enemies + hurt player
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:SpawnEnemies () (at Assets/_Project/Editor/ScreenVerify.cs:159)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:71)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 159)
+
+[Verify] shot game_spawned (frame 560)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:Shot (string) (at Assets/_Project/Editor/ScreenVerify.cs:140)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:68)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 140)
+
+[Verify] shot game_run (frame 830)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:Shot (string) (at Assets/_Project/Editor/ScreenVerify.cs:140)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:68)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 140)
+
+[Verify] shot game_late (frame 1230)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NeonHorde.EditorTools.ScreenVerify:Shot (string) (at Assets/_Project/Editor/ScreenVerify.cs:140)
+NeonHorde.EditorTools.ScreenVerify:Tick () (at Assets/_Project/Editor/ScreenVerify.cs:68)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/_Project/Editor/ScreenVerify.cs Line: 140)
+
+Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Temp/__Backupscenes/0.backup'
+	Deserialize:            0.441 ms
+	Integration:            193.279 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.008 ms
+	Total Operation Time:   193.729 ms
+Unloading 5 unused Assets / (24.9 KB). Loaded Objects now: 4616.
+Memory consumption went from 152.6 MB to 152.6 MB.
+Total: 7.900400 ms (FindLiveObjects: 0.291700 ms CreateObjectMapping: 0.186100 ms MarkObjects: 7.217100 ms  DeleteObjects: 0.204700 ms)
+
+[UnityConnectServicesConfig] config is NOT valid, switching to default
+Killing ADB server in 0.0570025 seconds.
+[Physics::Module] Cleanup current backned.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-chois-6000.0.82-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-chois-6000.0.82 channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server process was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1788249587876,"processId":16736,"allocatedMemory":13190193,"memoryLabels":[{"Default":28597},{"Permanent":15356},{"NewDelete":70913},{"Thread":4230344},{"Manager":817978},{"VertexData":392},{"Geometry":816},{"VFX":-104},{"Texture":296},{"Shader":78767},{"Material":24},{"GfxDevice":56072},{"Animation":392},{"Audio":4040},{"FontEngine":256},{"Physics":2081},{"Serialization":688},{"Input":14824},{"JobScheduler":33024},{"TextLib":160},{"Mono":32},{"MonoCode":64},{"ScriptingNativeRuntime":155060},{"BaseObject":1656016},{"Resource":1304},{"Renderer":2928},{"Transform":4646},{"File":6854},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":15399},{"DynamicArray":111519},{"HashMap":74733},{"Utility":2660622},{"Curl":880},{"PoolAlloc":1960},{"AI":104},{"TypeTree":5005},{"ScriptManager":512},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7888},{"Director":8240},{"CloudService":8896},{"WebRequest":552},{"VR":45969},{"SceneManager":496},{"Video":208},{"LazyScriptCache":32},{"Camera":17},{"Secure":265},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":464},{"Hierarchy":272},{"CoreStats":12536},{"Identifiers":6192},{"Gui":80},{"EditorUtility":66869},{"VersionControl":4},{"Undo":947},{"AssetDatabase":2576586},{"EditorGi":328},{"UnityConnect":24208},{"Upm":2036},{"DrivenProperties":72},{"LocalIPC":211},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2867},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}

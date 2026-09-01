@@ -22,6 +22,7 @@ namespace NeonHorde
         void Start()
         {
             if (ring != null) ring.gameObject.SetActive(false);
+            if (knob != null) knob.gameObject.SetActive(false);
         }
 
         public void OnPointerDown(PointerEventData e)
@@ -33,7 +34,11 @@ namespace NeonHorde
                 ring.gameObject.SetActive(true);
                 ring.position = e.position;
             }
-            if (knob != null) knob.position = e.position;
+            if (knob != null)
+            {
+                knob.gameObject.SetActive(true);
+                knob.position = e.position;
+            }
         }
 
         public void OnDrag(PointerEventData e)
@@ -50,6 +55,7 @@ namespace NeonHorde
             _active = false;
             Value = Vector2.zero;
             if (ring != null) ring.gameObject.SetActive(false);
+            if (knob != null) knob.gameObject.SetActive(false);
         }
     }
 }
