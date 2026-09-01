@@ -76,11 +76,13 @@ namespace NeonHorde
             _shape?.SetAim(target);
 
             // target on-screen length in world units, normalised by the sprite's own size
-            float wantLen = (_shape != null ? _shape.Scale : 0.8f) * 1.5f * (1f + _shownLevel * 0.05f);
+            bool spriteChar = _shape != null && _shape.SpriteMode;
+            float baseLen = (_shape != null ? _shape.Scale : 0.8f) * (spriteChar ? 1.0f : 1.5f);
+            float wantLen = baseLen * (1f + _shownLevel * 0.04f);
             float unit = _wr.sprite != null ? Mathf.Max(0.01f, _wr.sprite.bounds.size.x) : 1f;
             float sc = wantLen / unit;
             float ang = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            _wr.transform.position = shoulder + (Vector3)(dir * (wantLen * 0.15f));
+            _wr.transform.position = shoulder + (Vector3)(dir * (wantLen * (spriteChar ? 0.05f : 0.15f)));
             _wr.transform.rotation = Quaternion.Euler(0, 0, ang);
             _wr.transform.localScale = new Vector3(sc, dir.x < 0f ? -sc : sc, 1f); // keep upright when aiming left
         }

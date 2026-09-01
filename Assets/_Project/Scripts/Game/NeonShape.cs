@@ -30,27 +30,32 @@ namespace NeonHorde
         /// <summary>World point the player is aiming at (nearest enemy). Null = not aiming.</summary>
         public void SetAim(Vector2? worldTarget) => _aim = worldTarget;
         public float Scale => size;
-        public Vector3 ShoulderWorld =>
-            transform.position + new Vector3(_facing * 0.13f * size, 0.5f * size, -0.05f);
+        public bool SpriteMode => _spriteMode;
+        // hand height: chest-ish for the real avatar, hip for the stick figure
+        public Vector3 ShoulderWorld => transform.position +
+            new Vector3(_facing * 0.18f * size, (_spriteMode ? 1.35f : 0.5f) * size, -0.05f);
+
+        bool _builtWithRun;
 
         void OnEnable()
         {
             Build();
-            if (Application.isPlaying && GetComponent<PlayerWeaponRig>() == null)
-                gameObject.AddComponent<PlayerWeaponRig>();
+            if (Application.isPlaying)
+            {
+                if (GetComponent<PlayerWeaponRig>() == null) gameObject.AddComponent<PlayerWeaponRig>();
+                if (GetComponent<PlayerHealthBar>() == null) gameObject.AddComponent<PlayerHealthBar>();
+            }
         }
         void OnValidate() { if (isActiveAndEnabled) Build(); }
 
+        // RunManager.Instance is usually null during OnEnable, so the character sprite
+        // can't be chosen yet — rebuild once in Start, and again the first frame the
+        // run is actually available.
+        void Start() => Build();
+
         void Build()
         {
-            // scrub legacy children from the old halo/core/ring avatar the scene may
-            // still have serialized (runtime only — DestroyImmediate is illegal in OnValidate)
-            if (Application.isPlaying)
-                for (int i = transform.childCount - 1; i >= 0; i--)
-                {
-                    var ch = transform.GetChild(i);
-                    if (ch.name != "Rig") Destroy(ch.gameObject);
-                }
+            if (Application.isPlaying && RunManager.Instance != null) _builtWithRun = true;
 
             var rigT = transform.Find("Rig");
             if (rigT == null)
@@ -64,6 +69,17 @@ namespace NeonHorde
             _bob = bobT != null ? bobT : new GameObject("Bob").transform;
             _bob.SetParent(_rig, false);
 
+            // clean slate (play mode only; Build here is called from OnEnable/Start, so
+            // DestroyImmediate is legal — not the case in OnValidate)
+            if (Application.isPlaying)
+            {
+                for (int i = _bob.childCount - 1; i >= 0; i--)
+                    DestroyImmediate(_bob.GetChild(i).gameObject);
+                for (int i = transform.childCount - 1; i >= 0; i--)
+                    if (transform.GetChild(i).name != "Rig")
+                        DestroyImmediate(transform.GetChild(i).gameObject);
+            }
+
             // real-art avatar if a char_<id> sprite exists (runtime only — needs the run)
             Sprite charSprite = null;
             if (Application.isPlaying && RunManager.Instance != null)
@@ -74,13 +90,13 @@ namespace NeonHorde
                 _glow = Part("Glow", _bob, NeonArt.GlowSprite(128, 2.2f), 0);
                 _avatar = Part("Avatar", _bob, charSprite, 2);
                 var cc = CharacterCatalog.Get(RunManager.Instance.State.characterId).color;
-                _glow.color = cc * 0.35f;
+                _glow.color = cc * 0.32f;
                 _avatar.color = Color.white;
-                float ah = size * 3.4f;                          // ~2.7 world units tall
-                _avatar.transform.localScale = Vector3.one * (ah / _avatar.sprite.bounds.size.y);
-                _avatar.transform.localPosition = new Vector3(0f, ah * 0.5f, 0f);
-                _glow.transform.localScale = Vector3.one * (ah * 1.1f);
-                _glow.transform.localPosition = new Vector3(0f, ah * 0.45f, 0f);
+                float ah = size * 3.3f;                          // ~2.3 world units tall
+                _avatar.transform.localScale = Vector3.one * (ah / Mathf.Max(0.01f, _avatar.sprite.bounds.size.y));
+                _avatar.transform.localPosition = new Vector3(0f, ah * 0.48f, 0f);
+                _glow.transform.localScale = Vector3.one * (ah * 0.95f);
+                _glow.transform.localPosition = new Vector3(0f, ah * 0.42f, 0f);
                 _lastPos = transform.position;
                 return;
             }

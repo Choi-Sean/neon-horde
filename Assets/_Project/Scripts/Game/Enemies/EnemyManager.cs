@@ -375,14 +375,18 @@ namespace NeonHorde
                 Sprite real = boss ? _bossSprite : _realByKind[e.id];
                 if (real != null)
                 {
-                    // real art: full colour, no tint; bob + face travel + hit-flash white
+                    // real art: full colour, no tint; bob + face travel + hit-flash white.
+                    // target on-screen HEIGHT in world units, normalised by the sprite's
+                    // own bounds so a 512px asset isn't drawn 5 units tall.
                     Color rc = hit ? Color.Lerp(Color.white, Color.white * 3f, 0.6f) : Color.white;
-                    float rsc = e.radius * 3.4f;
-                    float rbob = (moving_bob(speed, now, s)) * 0.05f * rsc;
+                    float wantH = e.radius * (boss ? 2.3f : 3.0f);       // walker ~1.0, tank ~1.8, boss ~4.4
+                    float unit = Mathf.Max(0.01f, real.bounds.size.y);
+                    float rsc = wantH / unit;
+                    float rbob = moving_bob(speed, now, s) * 0.04f * wantH;
                     Color aura = _colorByKind[e.id];
                     if (elite) aura = Color.Lerp(aura, EliteTint, 0.5f);
                     _pool.Draw(_glowSprite, new Vector2(e.pos.x, e.pos.y), 0f,
-                        aura * (boss ? 0.7f : elite ? 0.55f : 0.35f), rsc * (boss ? 1.5f : 1.25f));
+                        aura * (boss ? 0.42f : elite ? 0.45f : 0.28f), wantH * (boss ? 1.0f : 1.1f));
                     _pool.Draw(real, new Vector2(e.pos.x, e.pos.y + rbob), -0.1f, rc,
                         new Vector2(faceX * rsc, rsc));
                     continue;

@@ -35,11 +35,11 @@ namespace NeonHorde
             bgImg.color = Paper;
             bgImg.raycastTarget = false;
 
-            // red diagonal banner across the upper third
+            // thin red diagonal banner behind the title
             _banner = New("Banner", root);
-            _banner.anchorMin = _banner.anchorMax = new Vector2(0.5f, 0.72f);
-            _banner.sizeDelta = new Vector2(2600, 300);
-            _banner.localRotation = Quaternion.Euler(0, 0, -12f);
+            _banner.anchorMin = _banner.anchorMax = new Vector2(0.5f, 0.9f);
+            _banner.sizeDelta = new Vector2(2600, 150);
+            _banner.localRotation = Quaternion.Euler(0, 0, -9f);
             var bnImg = _banner.gameObject.AddComponent<Image>();
             bnImg.color = Red;
             bnImg.raycastTarget = false;
@@ -73,7 +73,7 @@ namespace NeonHorde
                 _halftone.uvRect = r;
             }
             if (_banner != null)
-                _banner.anchoredPosition = new Vector2(Mathf.Sin(_t * 0.25f) * 40f, Mathf.Sin(_t * 0.4f) * 12f);
+                _banner.anchoredPosition = new Vector2(Mathf.Sin(_t * 0.25f) * 30f, Mathf.Sin(_t * 0.4f) * 8f);
         }
 
         static Texture2D HalftoneTex()

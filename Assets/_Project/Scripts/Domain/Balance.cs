@@ -13,7 +13,7 @@ namespace NeonHorde
         public const int   PlayerMaxHp = 100;
         public const float PlayerPickupRadius = 1.5f;
 
-        public const float CameraOrthoSize = 7f;
+        public const float CameraOrthoSize = 8f;
         public const float CameraFollowSmoothing = 8f;
 
         // M1 weapon (Bolt). Migrates to WeaponDefSO level tables in M2.

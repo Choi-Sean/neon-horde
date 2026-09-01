@@ -67,9 +67,21 @@ namespace NeonHorde
         public static void Place(RectTransform rt, Vector2 anchor, Vector2 size, Vector2 pos)
         {
             rt.anchorMin = rt.anchorMax = anchor;
-            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.pivot = anchor;                    // pos = position of the anchored corner
             rt.sizeDelta = size;
             rt.anchoredPosition = pos;
+        }
+
+        /// <summary>Stretch horizontally within the parent (leftPad/rightPad insets),
+        /// fixed height, positioned yFromTop below the parent's top edge. Keeps panel
+        /// content on-screen on any phone width.</summary>
+        public static void RowStretch(RectTransform rt, float leftPad, float rightPad, float height, float yFromTop)
+        {
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.offsetMin = new Vector2(leftPad, -yFromTop - height);
+            rt.offsetMax = new Vector2(-rightPad, -yFromTop);
         }
 
         public static Image Image(string name, Transform parent, Color color)
@@ -96,6 +108,34 @@ namespace NeonHorde
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
             t.verticalOverflow = VerticalWrapMode.Overflow;
             return t;
+        }
+
+        /// <summary>Left-aligned text stretched across a row, leaving `rightReserve` px
+        /// clear on the right for a button. `top`/`height` measured from the row's top.</summary>
+        public static Text Label(string name, RectTransform row, string text, int size,
+                                 float top, float height, float rightReserve,
+                                 TextAnchor a = TextAnchor.UpperLeft)
+        {
+            var t = Text(name, row, text, size, a);
+            var rt = (RectTransform)t.transform;
+            rt.anchorMin = new Vector2(0f, 1f); rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.offsetMin = new Vector2(24f, -top - height);
+            rt.offsetMax = new Vector2(-rightReserve, -top);
+            return t;
+        }
+
+        /// <summary>Button pinned to the right edge of a row.</summary>
+        public static Button RightButton(string name, RectTransform row, string label, int size,
+                                         out Text lbl, float w, float h, float yOff = 0f)
+        {
+            var b = Button(name, row, label, size, out lbl);
+            var rt = (RectTransform)b.transform;
+            rt.anchorMin = new Vector2(1f, 0.5f); rt.anchorMax = new Vector2(1f, 0.5f);
+            rt.pivot = new Vector2(1f, 0.5f);
+            rt.sizeDelta = new Vector2(w, h);
+            rt.anchoredPosition = new Vector2(-16f, yOff);
+            return b;
         }
 
         public static Button Button(string name, Transform parent, string label, int size, out Text labelText)

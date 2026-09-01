@@ -35,15 +35,13 @@ namespace NeonHorde
             var scaler = canvasGo.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1080, 1920);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.matchWidthOrHeight = 1f;   // match height; width flexes with the phone
             canvasGo.AddComponent<GraphicRaycaster>();
             _root = (RectTransform)canvasGo.transform;
 
             gameObject.AddComponent<MenuBackdrop>();
         }
 
-        Image _logo;
-        Text _charLabelSub;
 
         void Start()
         {
@@ -67,87 +65,84 @@ namespace NeonHorde
 
         Text _goldChip, _coreChip;
 
+        static readonly Color Slate  = new Color(0.34f, 0.42f, 0.52f, 1f);
+        static readonly Color Plum   = new Color(0.46f, 0.34f, 0.5f, 1f);
+
+        // full-width button in the top-anchored stack; advances the y cursor
+        Button Stack(ref float y, string name, string label, int size, Color tint, float h, UnityEngine.Events.UnityAction onClick)
+        {
+            var b = UiKit.Button(name, _root, label, size, out _, tint);
+            UiKit.RowStretch((RectTransform)b.transform, 40f, 40f, h, y);
+            b.onClick.AddListener(onClick);
+            y += h + 16f;
+            return b;
+        }
+
         void BuildHome()
         {
-            // logo mark
-            var logo = UiKit.Rect("Logo", _root);
-            logo.anchorMin = logo.anchorMax = new Vector2(0.5f, 1f);
-            logo.pivot = new Vector2(0.5f, 1f);
-            logo.sizeDelta = new Vector2(280, 280);
-            logo.anchoredPosition = new Vector2(0, -140);
-            _logo = logo.gameObject.AddComponent<Image>();
-            _logo.raycastTarget = false;
-            var loaded = Resources.Load<Sprite>("branding/logo_mark");
-            _logo.sprite = loaded != null ? loaded : NeonArt.Sprite(NeonShapeKind.Star, 256, 0.6f, 0.5f);
-            _logo.color = UiKit.Ink; // ink stamp, not a neon glow, on the paper backdrop
+            float top = 150f;
 
-            UiKit.Title("NEON HORDE", _root, new Vector2(0.5f, 1f), new Vector2(0, -470), 92, UiKit.Accent);
+            UiKit.Title("NEON HORDE", _root, new Vector2(0.5f, 1f), new Vector2(0, -top - 40f), 84, UiKit.Accent);
 
-            var strap = UiKit.Text("Strap", _root,
-                "PAID FOR BY THE HORDE  ·  NOT AUTHORIZED BY ANY CANDIDATE", 22);
-            UiKit.Place(strap.rectTransform, new Vector2(0.5f, 1f), new Vector2(1000, 40), new Vector2(0, -560));
-            strap.color = UiKit.Ink;
-            strap.fontStyle = FontStyle.Italic;
+            float y = top + 150f;
 
-            // currency chips
-            _goldChip = UiKit.Chip("GoldChip", _root, "0", UiKit.Gold, NeonShapeKind.Disc);
-            UiKit.Place(_goldChip.rectTransform.parent as RectTransform, new Vector2(0.5f, 1f), new Vector2(280, 76), new Vector2(-150, -650));
-            _coreChip = UiKit.Chip("CoreChip", _root, "0", UiKit.Core, NeonShapeKind.Diamond);
-            UiKit.Place(_coreChip.rectTransform.parent as RectTransform, new Vector2(0.5f, 1f), new Vector2(280, 76), new Vector2(150, -650));
+            // currency chips (two half-width)
+            var gcRoot = UiKit.Chip("GoldChip", _root, "0", UiKit.Gold, NeonShapeKind.Disc).rectTransform.parent as RectTransform;
+            gcRoot.anchorMin = new Vector2(0f, 1f); gcRoot.anchorMax = new Vector2(0.5f, 1f);
+            gcRoot.pivot = new Vector2(0.5f, 1f);
+            gcRoot.offsetMin = new Vector2(40f, -y - 70f); gcRoot.offsetMax = new Vector2(-8f, -y);
+            _goldChip = gcRoot.GetComponentInChildren<Text>();
+            var ccRoot = UiKit.Chip("CoreChip", _root, "0", UiKit.Core, NeonShapeKind.Diamond).rectTransform.parent as RectTransform;
+            ccRoot.anchorMin = new Vector2(0.5f, 1f); ccRoot.anchorMax = new Vector2(1f, 1f);
+            ccRoot.pivot = new Vector2(0.5f, 1f);
+            ccRoot.offsetMin = new Vector2(8f, -y - 70f); ccRoot.offsetMax = new Vector2(-40f, -y);
+            _coreChip = ccRoot.GetComponentInChildren<Text>();
+            y += 92f;
 
-            _charLabel = UiKit.Text("Char", _root, "", 34);
-            UiKit.Place(_charLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(1000, 48), new Vector2(0, 300));
+            y += 14f;
+            _charLabel = UiKit.Text("Char", _root, "", 26, TextAnchor.MiddleCenter);
+            UiKit.Place(_charLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(940, 40), new Vector2(0, -y));
             _charLabel.color = UiKit.Ink;
+            y += 62f;
 
-            var play = UiKit.Button("Play", _root, Loc.T("play"), 62, out _, UiKit.Accent);
-            UiKit.Place((RectTransform)play.transform, new Vector2(0.5f, 0.5f), new Vector2(780, 190), new Vector2(0, 150));
-            play.onClick.AddListener(() => { RunConfig.Clear(); SceneManager.LoadScene("Game"); });
+            Stack(ref y, "Play", Loc.T("play"), 56, UiKit.Accent, 150f,
+                () => { RunConfig.Clear(); SceneManager.LoadScene("Game"); });
+            Stack(ref y, "Daily", Loc.T("daily"), 36, UiKit.Gold, 92f, () =>
+                { RunConfig.SetRun(_meta.SelectedCharacter, DailySeed(), daily: true); SceneManager.LoadScene("Game"); });
+            Stack(ref y, "CharacterBtn", Loc.T("character"), 36, Slate, 104f, OpenCharacters);
+            Stack(ref y, "ShopBtn", Loc.T("shop"), 36, Slate, 104f, OpenShop);
+            Stack(ref y, "QuestBtn", Loc.T("quests"), 36, Slate, 104f, OpenQuests);
 
-            var daily = UiKit.Button("Daily", _root, Loc.T("daily"), 40, out _, new Color(1.6f, 1.1f, 0.3f, 1f));
-            UiKit.Place((RectTransform)daily.transform, new Vector2(0.5f, 0.5f), new Vector2(780, 100), new Vector2(0, 20));
-            daily.onClick.AddListener(() =>
-            {
-                RunConfig.SetRun(_meta.SelectedCharacter, DailySeed(), daily: true);
-                SceneManager.LoadScene("Game");
-            });
-
-            AddNav("CharacterBtn", Loc.T("character"), -110, OpenCharacters);
-            AddNav("ShopBtn", Loc.T("shop"), -240, OpenShop);
-            AddNav("QuestBtn", Loc.T("quests"), -370, OpenQuests);
-
-            var store = UiKit.Button("StoreBtn", _root, Loc.T("store"), 34, out _, new Color(1.4f, 0.6f, 1.6f, 1f));
-            UiKit.Place((RectTransform)store.transform, new Vector2(0.5f, 0f), new Vector2(370, 92), new Vector2(-200, 250));
+            // Store / Settings row (two half-width) anchored to the BOTTOM
+            var store = UiKit.Button("StoreBtn", _root, Loc.T("store"), 32, out _, Plum);
+            var srt = (RectTransform)store.transform;
+            srt.anchorMin = new Vector2(0f, 0f); srt.anchorMax = new Vector2(0.5f, 0f); srt.pivot = new Vector2(0.5f, 0f);
+            srt.offsetMin = new Vector2(40f, 190f); srt.offsetMax = new Vector2(-8f, 280f);
             store.onClick.AddListener(OpenStore);
-
-            var settings = UiKit.Button("SettingsBtn", _root, Loc.T("settings"), 34, out _, new Color(0.6f, 0.8f, 1f, 1f));
-            UiKit.Place((RectTransform)settings.transform, new Vector2(0.5f, 0f), new Vector2(370, 92), new Vector2(200, 250));
+            var settings = UiKit.Button("SettingsBtn", _root, Loc.T("settings"), 32, out _, Slate);
+            var sert = (RectTransform)settings.transform;
+            sert.anchorMin = new Vector2(0.5f, 0f); sert.anchorMax = new Vector2(1f, 0f); sert.pivot = new Vector2(0.5f, 0f);
+            sert.offsetMin = new Vector2(8f, 190f); sert.offsetMax = new Vector2(-40f, 280f);
             settings.onClick.AddListener(OpenSettings);
 
-            // account banner
-            var bannerImg = _root.gameObject == null ? null : new GameObject("Banner", typeof(RectTransform)).AddComponent<Image>();
-            _bannerRoot = bannerImg.gameObject;
-            bannerImg.transform.SetParent(_root, false);
-            bannerImg.sprite = NeonArt.Panel(48, 16, 2f, 0.4f, 4f);
-            bannerImg.type = UnityEngine.UI.Image.Type.Sliced;
-            bannerImg.color = new Color(1.4f, 0.9f, 0.3f, 1f);
-            var brt = (RectTransform)_bannerRoot.transform;
-            brt.anchorMin = new Vector2(0.5f, 0f); brt.anchorMax = new Vector2(0.5f, 0f);
-            brt.pivot = new Vector2(0.5f, 0f); brt.sizeDelta = new Vector2(1000, 140); brt.anchoredPosition = new Vector2(0, 100);
-            _bannerLabel = UiKit.Text("txt", brt, "", 25, TextAnchor.MiddleLeft);
-            UiKit.Place(_bannerLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(680, 120), new Vector2(-130, 0));
+            // guest banner along the very bottom
+            var banner = UiKit.Image("Banner", _root, new Color(UiKit.Accent.r, UiKit.Accent.g, UiKit.Accent.b, 0.14f));
+            _bannerRoot = banner.gameObject;
+            var brt = banner.rectTransform;
+            brt.anchorMin = new Vector2(0f, 0f); brt.anchorMax = new Vector2(1f, 0f); brt.pivot = new Vector2(0.5f, 0f);
+            brt.offsetMin = new Vector2(0f, 0f); brt.offsetMax = new Vector2(0f, 170f);
+            _bannerLabel = UiKit.Text("txt", brt, "", 22, TextAnchor.MiddleLeft);
+            var blr = _bannerLabel.rectTransform;
+            blr.anchorMin = new Vector2(0f, 0f); blr.anchorMax = new Vector2(1f, 1f);
+            blr.offsetMin = new Vector2(24f, 10f); blr.offsetMax = new Vector2(-190f, -10f);
             _bannerLabel.color = UiKit.Ink;
-            var linkBtn = UiKit.Button("link", brt, "연결", 30, out _, new Color(0.2f, 1.4f, 1.9f, 1f));
-            UiKit.Place((RectTransform)linkBtn.transform, new Vector2(1f, 0.5f), new Vector2(210, 100), new Vector2(-120, 0));
+            var linkBtn = UiKit.Button("link", brt, Loc.T("select") == "선택" ? "연결" : "LINK", 28, out _, UiKit.Accent);
+            var lrt = (RectTransform)linkBtn.transform;
+            lrt.anchorMin = new Vector2(1f, 0.5f); lrt.anchorMax = new Vector2(1f, 0.5f); lrt.pivot = new Vector2(1f, 0.5f);
+            lrt.sizeDelta = new Vector2(140f, 78f); lrt.anchoredPosition = new Vector2(-24f, 6f);
             linkBtn.onClick.AddListener(() => OpenAccount(false));
 
             RefreshHome();
-        }
-
-        void AddNav(string name, string label, float y, UnityEngine.Events.UnityAction onClick)
-        {
-            var b = UiKit.Button(name, _root, label, 42, out _, new Color(0.16f, 0.55f, 0.9f, 1f));
-            UiKit.Place((RectTransform)b.transform, new Vector2(0.5f, 0.5f), new Vector2(780, 118), new Vector2(0, y));
-            b.onClick.AddListener(onClick);
         }
 
         static int DailySeed()
@@ -176,6 +171,9 @@ namespace NeonHorde
 
         // ---------- panels ----------
 
+        RectTransform _scrollContent;
+        const float RowH = 148f, RowStride = 160f;
+
         RectTransform OpenPanel(string title)
         {
             ClosePanel();
@@ -188,41 +186,58 @@ namespace NeonHorde
             UiKit.Stretch(dim.rectTransform);
             dim.raycastTarget = true;
 
+            // card: full width minus a small margin, ~90% height, centred — fits any phone
             var card = UiKit.Image("Card", host, UiKit.Panel);
-            UiKit.Place(card.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(980, 1500), Vector2.zero);
+            var crt = card.rectTransform;
+            crt.anchorMin = new Vector2(0f, 0.05f);
+            crt.anchorMax = new Vector2(1f, 0.95f);
+            crt.offsetMin = new Vector2(20f, 0f);
+            crt.offsetMax = new Vector2(-20f, 0f);
 
-            var head = UiKit.Text("Head", card.transform, title, 54);
-            UiKit.Place(head.rectTransform, new Vector2(0.5f, 1f), new Vector2(900, 90), new Vector2(0, -70));
+            var head = UiKit.Text("Head", card.transform, title, 52);
+            UiKit.Place(head.rectTransform, new Vector2(0.5f, 1f), new Vector2(900, 84), new Vector2(0, -24));
 
-            var back = UiKit.Button("Back", card.transform, Loc.T("close"), 40, out _);
-            UiKit.Place((RectTransform)back.transform, new Vector2(0.5f, 0f), new Vector2(400, 110), new Vector2(0, 90));
+            var back = UiKit.Button("Back", card.transform, Loc.T("close"), 38, out _);
+            UiKit.Place((RectTransform)back.transform, new Vector2(0.5f, 0f), new Vector2(360, 96), new Vector2(0, 24));
             back.onClick.AddListener(() => { ClosePanel(); RefreshHome(); });
 
-            var list = UiKit.Rect("List", card.transform);
-            list.anchorMin = new Vector2(0.5f, 0.5f);
-            list.anchorMax = new Vector2(0.5f, 0.5f);
-            list.pivot = new Vector2(0.5f, 1f);
-            list.sizeDelta = new Vector2(900, 1200);
-            list.anchoredPosition = new Vector2(0, 620);
-            return list;
+            // scroll viewport between head and back
+            var viewport = UiKit.Rect("Viewport", card.transform);
+            viewport.anchorMin = new Vector2(0f, 0f); viewport.anchorMax = new Vector2(1f, 1f);
+            viewport.offsetMin = new Vector2(8f, 140f);
+            viewport.offsetMax = new Vector2(-8f, -120f);
+            viewport.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
+
+            _scrollContent = UiKit.Rect("Content", viewport);
+            _scrollContent.anchorMin = new Vector2(0f, 1f); _scrollContent.anchorMax = new Vector2(1f, 1f);
+            _scrollContent.pivot = new Vector2(0.5f, 1f);
+            _scrollContent.offsetMin = new Vector2(0f, 0f); _scrollContent.offsetMax = new Vector2(0f, 0f);
+            _scrollContent.sizeDelta = new Vector2(0f, 0f);
+
+            var sr = viewport.gameObject.AddComponent<UnityEngine.UI.ScrollRect>();
+            sr.content = _scrollContent;
+            sr.viewport = viewport;
+            sr.horizontal = false;
+            sr.movementType = UnityEngine.UI.ScrollRect.MovementType.Clamped;
+            sr.scrollSensitivity = 30f;
+            return _scrollContent;
         }
 
         void ClosePanel()
         {
             if (_panelHost != null) Destroy(_panelHost);
             _panelHost = null;
+            _scrollContent = null;
         }
 
-        void Row(RectTransform list, int index, out RectTransform row)
+        void Row(RectTransform content, int index, out RectTransform row)
         {
-            row = UiKit.Rect($"Row{index}", list);
-            row.anchorMin = new Vector2(0.5f, 1f);
-            row.anchorMax = new Vector2(0.5f, 1f);
-            row.pivot = new Vector2(0.5f, 1f);
-            row.sizeDelta = new Vector2(880, 150);
-            row.anchoredPosition = new Vector2(0, -index * 165f);
+            row = UiKit.Rect($"Row{index}", content);
+            UiKit.RowStretch(row, 6f, 6f, RowH, index * RowStride);
             var bg = UiKit.Image("bg", row, UiKit.Card);
             UiKit.Stretch(bg.rectTransform);
+            float need = (index + 1) * RowStride + 8f;
+            if (content.sizeDelta.y < need) content.sizeDelta = new Vector2(0f, need);
         }
 
         // ---------- characters ----------
@@ -235,10 +250,8 @@ namespace NeonHorde
                 var def = CharacterCatalog.Get((CharacterId)i);
                 Row(list, i, out var row);
 
-                var name = UiKit.Text("name", row, def.name, 40, TextAnchor.UpperLeft);
-                UiKit.Place(name.rectTransform, new Vector2(0f, 1f), new Vector2(560, 44), new Vector2(150, -14));
-                var abil = UiKit.Text("abil", row, def.abilityText, 26, TextAnchor.UpperLeft);
-                UiKit.Place(abil.rectTransform, new Vector2(0f, 1f), new Vector2(560, 60), new Vector2(150, -64));
+                UiKit.Label("name", row, def.name, 34, 12f, 40f, 280f);
+                UiKit.Label("abil", row, def.abilityText, 20, 56f, 78f, 280f);
 
                 var id = (CharacterId)i;
                 bool owned = _meta.IsCharacterUnlocked(id);
@@ -246,18 +259,17 @@ namespace NeonHorde
 
                 if (!owned)
                 {
-                    var btn = UiKit.Button("unlock", row, $"{def.coreCost} 코어로 해금", 28, out _);
-                    UiKit.Place((RectTransform)btn.transform, new Vector2(1f, 0.5f), new Vector2(320, 100), new Vector2(-170, 0));
+                    bool hasIap = IapCatalog.TryGet(def.iapProductId ?? "", out var prod);
+                    var btn = UiKit.RightButton("unlock", row, $"{def.coreCost} 코어", 26, out _, 250f, 78f, hasIap ? 30f : 0f);
                     btn.onClick.AddListener(() =>
                     {
                         if (_meta.UnlockCharacterWithCores(id)) { _meta.SelectCharacter(id); }
                         OpenCharacters();
                         RefreshHome();
                     });
-                    if (IapCatalog.TryGet(def.iapProductId ?? "", out var prod))
+                    if (hasIap)
                     {
-                        var buy = UiKit.Button("iap", row, $"구매 {prod.priceText}", 22, out _);
-                        UiKit.Place((RectTransform)buy.transform, new Vector2(1f, 0f), new Vector2(320, 54), new Vector2(-170, 10));
+                        var buy = UiKit.RightButton("iap", row, prod.priceText, 22, out _, 250f, 54f, -40f);
                         buy.onClick.AddListener(() => _iap?.Purchase(prod.id, r =>
                         {
                             if (r.success) IapFulfillment.Grant(prod.id, _meta);
@@ -268,8 +280,7 @@ namespace NeonHorde
                 }
                 else
                 {
-                    var btn = UiKit.Button("sel", row, selected ? "선택됨" : "선택", 30, out var bl);
-                    UiKit.Place((RectTransform)btn.transform, new Vector2(1f, 0.5f), new Vector2(240, 100), new Vector2(-130, 0));
+                    var btn = UiKit.RightButton("sel", row, selected ? "선택됨" : "선택", 28, out var bl, 230f, 96f);
                     btn.interactable = !selected;
                     if (selected) bl.color = UiKit.Accent;
                     btn.onClick.AddListener(() => { _meta.SelectCharacter(id); OpenCharacters(); RefreshHome(); });
@@ -289,16 +300,13 @@ namespace NeonHorde
                 int lvl = _meta.PowerLevel(powers[i]);
                 Row(list, i, out var row);
 
-                var name = UiKit.Text("name", row, def.name, 34, TextAnchor.UpperLeft);
-                UiKit.Place(name.rectTransform, new Vector2(0f, 1f), new Vector2(520, 40), new Vector2(30, -14));
-                var desc = UiKit.Text("desc", row, $"{def.desc}   ({lvl}/{def.maxLevel})", 24, TextAnchor.UpperLeft);
-                UiKit.Place(desc.rectTransform, new Vector2(0f, 1f), new Vector2(560, 56), new Vector2(30, -60));
+                UiKit.Label("name", row, def.name, 30, 14f, 38f, 240f);
+                UiKit.Label("desc", row, $"{def.desc}   ({lvl}/{def.maxLevel})", 20, 56f, 60f, 240f);
 
                 var id = powers[i];
                 bool max = lvl >= def.maxLevel;
                 string btnLabel = max ? "MAX" : $"{def.CostForLevel(lvl)} G";
-                var btn = UiKit.Button("buy", row, btnLabel, 30, out _);
-                UiKit.Place((RectTransform)btn.transform, new Vector2(1f, 0.5f), new Vector2(300, 110), new Vector2(-160, 0));
+                var btn = UiKit.RightButton("buy", row, btnLabel, 28, out _, 210f, 96f);
                 btn.interactable = !max && _meta.Gold >= def.CostForLevel(lvl);
                 btn.onClick.AddListener(() => { _meta.BuyPower(id); OpenShop(); RefreshHome(); });
             }
@@ -319,13 +327,11 @@ namespace NeonHorde
         void AddQuestSection(RectTransform list, ref int idx, string header,
                              System.Collections.Generic.IReadOnlyList<MetaState.QuestEntry> entries)
         {
-            var h = UiKit.Text($"h{idx}", list, header, 30, TextAnchor.UpperLeft);
-            h.rectTransform.anchorMin = new Vector2(0.5f, 1f);
-            h.rectTransform.anchorMax = new Vector2(0.5f, 1f);
-            h.rectTransform.pivot = new Vector2(0.5f, 1f);
-            h.rectTransform.sizeDelta = new Vector2(880, 40);
-            h.rectTransform.anchoredPosition = new Vector2(0, -idx * 165f);
+            var hRow = UiKit.Rect($"h{idx}", list);
+            UiKit.RowStretch(hRow, 6f, 6f, 56f, idx * RowStride);
+            var h = UiKit.Label("t", hRow, header, 28, 8f, 44f, 0f);
             h.color = UiKit.Accent;
+            h.fontStyle = FontStyle.Bold;
             idx++;
 
             foreach (var e in entries)
@@ -335,16 +341,14 @@ namespace NeonHorde
                 var def = defN.Value;
                 Row(list, idx, out var row);
 
-                var name = UiKit.Text("name", row, def.description, 30, TextAnchor.UpperLeft);
-                UiKit.Place(name.rectTransform, new Vector2(0f, 1f), new Vector2(560, 40), new Vector2(30, -16));
-                var prog = UiKit.Text("prog", row, $"{Mathf.Min(e.progress, def.target)}/{def.target}   +{def.rewardCores} 코어", 24, TextAnchor.UpperLeft);
-                UiKit.Place(prog.rectTransform, new Vector2(0f, 1f), new Vector2(560, 40), new Vector2(30, -64));
+                UiKit.Label("name", row, def.description, 26, 14f, 38f, 200f);
+                UiKit.Label("prog", row,
+                    $"{Mathf.Min(e.progress, def.target)}/{def.target}   +{def.rewardCores} 코어", 20, 56f, 40f, 200f);
 
                 string id = e.id;
                 bool claimed = e.claimed;
                 bool canClaim = _quests.CanClaim(id);
-                var btn = UiKit.Button("claim", row, claimed ? "완료" : (canClaim ? "수령" : "진행중"), 28, out _);
-                UiKit.Place((RectTransform)btn.transform, new Vector2(1f, 0.5f), new Vector2(240, 110), new Vector2(-130, 0));
+                var btn = UiKit.RightButton("claim", row, claimed ? "완료" : (canClaim ? "수령" : "진행중"), 26, out _, 170f, 92f);
                 btn.interactable = canClaim;
                 btn.onClick.AddListener(() => { _quests.Claim(id); OpenQuests(); RefreshHome(); });
 
@@ -363,8 +367,6 @@ namespace NeonHorde
                 var p = products[i];
                 Row(list, i, out var row);
 
-                var name = UiKit.Text("name", row, p.title, 32, TextAnchor.UpperLeft);
-                UiKit.Place(name.rectTransform, new Vector2(0f, 1f), new Vector2(520, 40), new Vector2(30, -18));
                 string sub = p.kind switch
                 {
                     IapKind.CoreBundle => $"코어 +{p.cores}",
@@ -373,16 +375,15 @@ namespace NeonHorde
                     IapKind.StarterPack => $"코어 +{p.cores}, 골드 +{p.gold}, 광고 제거",
                     _ => ""
                 };
-                var desc = UiKit.Text("desc", row, sub, 22, TextAnchor.UpperLeft);
-                UiKit.Place(desc.rectTransform, new Vector2(0f, 1f), new Vector2(520, 40), new Vector2(30, -62));
+                UiKit.Label("name", row, p.title, 30, 14f, 38f, 230f);
+                UiKit.Label("desc", row, sub, 20, 56f, 60f, 230f);
 
                 bool owned = (p.kind == IapKind.RemoveAds && _meta.State.adsRemoved)
                              || (p.kind == IapKind.Character && _meta.IsCharacterUnlocked(p.character))
                              || _meta.State.ownedProducts.Contains(p.id) && p.kind != IapKind.CoreBundle;
 
                 var id = p.id;
-                var btn = UiKit.Button("buy", row, owned ? "보유" : p.priceText, 28, out _);
-                UiKit.Place((RectTransform)btn.transform, new Vector2(1f, 0.5f), new Vector2(280, 110), new Vector2(-150, 0));
+                var btn = UiKit.RightButton("buy", row, owned ? "보유" : p.priceText, 26, out _, 200f, 96f);
                 btn.interactable = !owned;
                 btn.onClick.AddListener(() => _iap?.Purchase(id, r =>
                 {
@@ -399,29 +400,36 @@ namespace NeonHorde
         {
             var list = OpenPanel(nudge ? "진행상황을 지키세요" : "계정");
 
-            var body = UiKit.Text("body", list, _account != null && _account.IsLinked
+            var bodyRow = UiKit.Rect("bodyRow", list);
+            UiKit.RowStretch(bodyRow, 6f, 6f, 220f, 0f);
+            var body = UiKit.Label("body", bodyRow, _account != null && _account.IsLinked
                     ? $"연결됨: {_account.DisplayName}"
                     : "게스트 모드에서는 데이터가 이 기기에만 저장됩니다.\n계정을 연결하면 클라우드에 백업되어\n앱을 지우거나 기기를 바꿔도 이어집니다.",
-                26, TextAnchor.UpperLeft);
-            UiKit.Place(body.rectTransform, new Vector2(0.5f, 1f), new Vector2(860, 240), new Vector2(0, -60));
+                24, 8f, 200f, 0f);
+            list.sizeDelta = new Vector2(0f, 240f);
 
             if (_account == null || !_account.IsLinked)
             {
-                var g = UiKit.Button("google", list, "Google로 연결", 30, out _);
-                UiKit.Place((RectTransform)g.transform, new Vector2(0.5f, 1f), new Vector2(700, 120), new Vector2(0, -320));
-                g.onClick.AddListener(() => _account.LinkWithProvider("google", _ => { OpenAccount(false); RefreshHome(); }));
+                AddAccBtn(list, "google", "Google로 연결", 1,
+                    () => _account.LinkWithProvider("google", _ => { OpenAccount(false); RefreshHome(); }));
+                AddAccBtn(list, "apple", "Apple로 연결", 2,
+                    () => _account.LinkWithProvider("apple", _ => { OpenAccount(false); RefreshHome(); }));
+                AddAccBtn(list, "email", "이메일로 연결", 3,
+                    () => _account.LinkWithEmail($"player{_meta.State.totalRuns}@example.com", _ => { OpenAccount(false); RefreshHome(); }));
 
-                var ap = UiKit.Button("apple", list, "Apple로 연결", 30, out _);
-                UiKit.Place((RectTransform)ap.transform, new Vector2(0.5f, 1f), new Vector2(700, 120), new Vector2(0, -460));
-                ap.onClick.AddListener(() => _account.LinkWithProvider("apple", _ => { OpenAccount(false); RefreshHome(); }));
-
-                var em = UiKit.Button("email", list, "이메일로 연결", 30, out _);
-                UiKit.Place((RectTransform)em.transform, new Vector2(0.5f, 1f), new Vector2(700, 120), new Vector2(0, -600));
-                em.onClick.AddListener(() => _account.LinkWithEmail($"player{_meta.State.totalRuns}@example.com", _ => { OpenAccount(false); RefreshHome(); }));
-
-                var note = UiKit.Text("note", list, "* 실제 로그인 연동은 백엔드 연결 후 활성화됩니다 (docs/EXTERNAL_SETUP.md).", 18, TextAnchor.UpperLeft);
-                UiKit.Place(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(860, 60), new Vector2(0, -740));
+                var noteRow = UiKit.Rect("noteRow", list);
+                UiKit.RowStretch(noteRow, 6f, 6f, 80f, 4 * RowStride + 20f);
+                var note = UiKit.Label("t", noteRow, "* 실제 로그인 연동은 백엔드 연결 후 활성화됩니다.", 18, 8f, 60f, 0f);
+                note.color = new Color(UiKit.Ink.r, UiKit.Ink.g, UiKit.Ink.b, 0.6f);
+                list.sizeDelta = new Vector2(0f, 5 * RowStride + 40f);
             }
+        }
+
+        void AddAccBtn(RectTransform list, string name, string label, int slot, UnityEngine.Events.UnityAction cb)
+        {
+            var b = UiKit.Button(name, list, label, 30, out _, Slate);
+            UiKit.RowStretch((RectTransform)b.transform, 40f, 40f, 104f, slot * RowStride);
+            b.onClick.AddListener(cb);
         }
 
         // ---------- settings ----------
@@ -438,10 +446,8 @@ namespace NeonHorde
             SettingToggleRow(list, r++, "저사양 모드", () => s.quality == 0, on => { s.quality = on ? 0 : 1; _meta.Save(); });
 
             Row(list, r, out var langRow);
-            var langTxt = UiKit.Text("t", langRow, "언어 / Language", 30, TextAnchor.UpperLeft);
-            UiKit.Place(langTxt.rectTransform, new Vector2(0f, 0.5f), new Vector2(520, 60), new Vector2(30, 0));
-            var langBtn = UiKit.Button("b", langRow, Loc.Current == Lang.Ko ? "한국어" : "English", 28, out _);
-            UiKit.Place((RectTransform)langBtn.transform, new Vector2(1f, 0.5f), new Vector2(240, 100), new Vector2(-130, 0));
+            UiKit.Label("t", langRow, "언어 / Language", 28, 0f, RowH, 260f, TextAnchor.MiddleLeft);
+            var langBtn = UiKit.RightButton("b", langRow, Loc.Current == Lang.Ko ? "한국어" : "English", 26, out _, 230f, 92f);
             langBtn.onClick.AddListener(() =>
             {
                 s.language = s.language == 0 ? 1 : 0;
@@ -456,19 +462,15 @@ namespace NeonHorde
             r++;
 
             Row(list, r, out var accRow);
-            var accTxt = UiKit.Text("t", accRow, _account != null && _account.IsLinked ? $"계정: {_account.DisplayName}" : "계정: 게스트", 30, TextAnchor.UpperLeft);
-            UiKit.Place(accTxt.rectTransform, new Vector2(0f, 0.5f), new Vector2(520, 60), new Vector2(30, 0));
-            var accBtn = UiKit.Button("b", accRow, _account != null && _account.IsLinked ? "연결됨" : "연결", 26, out _);
-            UiKit.Place((RectTransform)accBtn.transform, new Vector2(1f, 0.5f), new Vector2(240, 100), new Vector2(-130, 0));
+            UiKit.Label("t", accRow, _account != null && _account.IsLinked ? $"계정: {_account.DisplayName}" : "계정: 게스트", 28, 0f, RowH, 260f, TextAnchor.MiddleLeft);
+            var accBtn = UiKit.RightButton("b", accRow, _account != null && _account.IsLinked ? "연결됨" : "연결", 26, out _, 230f, 92f);
             accBtn.interactable = _account == null || !_account.IsLinked;
             accBtn.onClick.AddListener(() => OpenAccount(false));
             r++;
 
             Row(list, r, out var delRow);
-            var delTxt = UiKit.Text("t", delRow, "저장 데이터 삭제", 30, TextAnchor.UpperLeft);
-            UiKit.Place(delTxt.rectTransform, new Vector2(0f, 0.5f), new Vector2(520, 60), new Vector2(30, 0));
-            var delBtn = UiKit.Button("b", delRow, "삭제", 26, out _);
-            UiKit.Place((RectTransform)delBtn.transform, new Vector2(1f, 0.5f), new Vector2(240, 100), new Vector2(-130, 0));
+            UiKit.Label("t", delRow, "저장 데이터 삭제", 28, 0f, RowH, 260f, TextAnchor.MiddleLeft);
+            var delBtn = UiKit.RightButton("b", delRow, "삭제", 26, out _, 230f, 92f);
             delBtn.onClick.AddListener(() =>
             {
                 if (ServiceLocator.TryGet<ISaveService>(out var sv)) sv.Delete();
@@ -479,10 +481,8 @@ namespace NeonHorde
         void SettingToggleRow(RectTransform list, int index, string label, Func<bool> get, Action<bool> set)
         {
             Row(list, index, out var row);
-            var t = UiKit.Text("t", row, label, 30, TextAnchor.UpperLeft);
-            UiKit.Place(t.rectTransform, new Vector2(0f, 0.5f), new Vector2(520, 60), new Vector2(30, 0));
-            var btn = UiKit.Button("b", row, get() ? "ON" : "OFF", 28, out var bl);
-            UiKit.Place((RectTransform)btn.transform, new Vector2(1f, 0.5f), new Vector2(220, 100), new Vector2(-130, 0));
+            UiKit.Label("t", row, label, 28, 0f, RowH, 220f, TextAnchor.MiddleLeft);
+            var btn = UiKit.RightButton("b", row, get() ? "ON" : "OFF", 26, out var bl, 190f, 92f);
             if (get()) bl.color = UiKit.Accent;
             btn.onClick.AddListener(() => { set(!get()); OpenSettings(); });
         }
